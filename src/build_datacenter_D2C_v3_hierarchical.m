@@ -212,18 +212,18 @@ end
 % Numeric displays show actual values during simulation and preserve the final
 % value when the run finishes. The labels identify the quantity and unit.
 display_defs = {
-    'Fluid Properties/1',             'Internal Cp [J/(kg K)]',       [35 370 285 405];
-    'Fluid Properties/3',             'Internal viscosity [Pa s]',   [35 420 285 455];
-    'Fluid Properties/5',             'External Cp [J/(kg K)]',       [35 470 285 505];
-    'Fluid Properties/7',             'External viscosity [Pa s]',   [35 520 285 555];
-    'Aeration Model/1',               'Internal air fraction [%]',    [325 370 540 405];
-    'Aeration Model/2',               'External air fraction [%]',    [325 420 540 455];
-    'Aeration Model/7',               'Effective Rth [K/W]',          [325 470 540 505];
-    'Rack CDU and Internal Loop/5',   'Estimated chip temperature [C]', [325 520 540 555];
-    'Facility Energy and Cost/1',     'Facility power [kW]',          [35 590 285 625];
-    'Facility Energy and Cost/7',     'Period PUE [x]',                [325 590 540 625];
-    'Facility Energy and Cost/9',     'Annual cooling energy [kWh]',  [35 640 285 675];
-    'TCO Financial Model/5',          'Nominal cooling TCO [currency]', [325 640 540 675]
+    'Fluid Properties/1',             'Internal Cp (J per kg K)',       [35 370 285 405];
+    'Fluid Properties/3',             'Internal viscosity (Pa s)',     [35 420 285 455];
+    'Fluid Properties/5',             'External Cp (J per kg K)',       [35 470 285 505];
+    'Fluid Properties/7',             'External viscosity (Pa s)',     [35 520 285 555];
+    'Aeration Model/1',               'Internal air fraction (percent)', [325 370 540 405];
+    'Aeration Model/2',               'External air fraction (percent)', [325 420 540 455];
+    'Aeration Model/7',               'Effective Rth (K per W)',        [325 470 540 505];
+    'Rack CDU and Internal Loop/5',   'Estimated chip temperature (C)', [325 520 540 555];
+    'Facility Energy and Cost/1',     'Facility power (kW)',            [35 590 285 625];
+    'Facility Energy and Cost/7',     'Period PUE (x)',                  [325 590 540 625];
+    'Facility Energy and Cost/9',     'Annual cooling energy (kWh)',    [35 640 285 675];
+    'TCO Financial Model/5',          'Nominal cooling TCO (currency)', [325 640 540 675]
 };
 for idx = 1:size(display_defs,1)
     add_block('simulink/Sinks/Display', [model '/' display_defs{idx,2}], ...
