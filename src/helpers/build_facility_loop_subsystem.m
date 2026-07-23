@@ -25,7 +25,7 @@ function build_facility_loop_subsystem(path)
     add_block('simulink/Signal Routing/Mux', [path '/Pump Inputs'], ...
         'Inputs', '7', 'Position', [105 145 125 385]);
     add_block('simulink/Signal Routing/Mux', [path '/Pressure Drop Inputs'], ...
-        'Inputs', '10', 'Position', [105 410 125 680]);
+        'Inputs', '9', 'Position', [105 410 125 650]);
     add_block('simulink/Sources/Constant', [path '/Fixed Pipe Length m'], 'Value', num2str(evalin('base','external_fixed_pipe_length_m'),15), 'Position', [175 410 275 435]);
     add_block('simulink/Sources/Constant', [path '/U per Rack'], 'Value', num2str(evalin('base','rack_U'),15), 'Position', [175 445 275 470]);
     add_block('simulink/Sources/Constant', [path '/Additional Length per Rack m'], 'Value', num2str(evalin('base','additional_external_pipe_length_per_rack_m'),15), 'Position', [175 480 275 505]);
@@ -40,13 +40,10 @@ function build_facility_loop_subsystem(path)
     add_block('simulink/Math Operations/Sum', [path '/Hot Cold Viscosity Sum'], 'Inputs', '++', 'Position', [320 620 370 670]);
     add_block('simulink/Math Operations/Gain', [path '/Average Viscosity Pa s'], 'Gain', '0.5', 'Position', [400 625 500 665]);
     add_block('simulink/User-Defined Functions/Fcn', [path '/External Pressure Drop Pa'], ...
-        'Expr', ['((0.25/(log10(u(9)/(3.7*u(8))+5.74/((u(3)*(4*(u(1)*1000/' ...
-        '((u(2)+1e-9)*external_target_deltaT_K)/(u(6)+1e-6))/(3.14159265*u(8)^2))*' ...
-        'u(8)/(u(4)+1e-9))^0.9))^2))*u(7)/(2*u(8)) + ' ...
-        '0.25/(log10(u(9)/(3.7*u(8))+5.74/((u(3)*(4*(u(1)*1000/' ...
-        '((u(2)+1e-9)*external_target_deltaT_K)/(u(6)+1e-6))/(3.14159265*u(8)^2))*' ...
-        'u(8)/(u(5)+1e-9))^0.9))^2))*u(7)/(2*u(8)) + u(10))*u(3)*' ...
-        '(4*(u(1)*1000/((u(2)+1e-9)*external_target_deltaT_K)/(u(6)+1e-6))/(3.14159265*u(8)^2))^2/2'], ...
+        'Expr', ['((0.25/(log10(u(8)/(3.7*u(7))+5.74/((u(3)*(4*(u(1)*1000/' ...
+        '((u(2)+1e-9)*external_target_deltaT_K)/(u(5)+1e-6))/(3.14159265*u(7)^2))*' ...
+        'u(7)/(u(4)+1e-9))^0.9))^2))*u(6)/u(7)+u(9))*u(3)*' ...
+        '(4*(u(1)*1000/((u(2)+1e-9)*external_target_deltaT_K)/(u(5)+1e-6))/(3.14159265*u(7)^2))^2/2'], ...
         'Position', [320 485 560 570]);
     pump_expr = [ ...
         'pump_power_calibration_factor*u(7)*' ...
@@ -102,22 +99,21 @@ function build_facility_loop_subsystem(path)
     add_line(path, 'HeatFromCDU_kW/1', 'Pressure Drop Inputs/1');
     add_line(path, 'ExternalRhoCp_J_m3K/1', 'Pressure Drop Inputs/2');
     add_line(path, 'ExternalDensity_kg_m3/1', 'Pressure Drop Inputs/3');
-    add_line(path, 'Hot Viscosity Pa s/1', 'Pressure Drop Inputs/4');
-    add_line(path, 'Cold Viscosity Pa s/1', 'Pressure Drop Inputs/5');
+    add_line(path, 'Average Viscosity Pa s/1', 'Pressure Drop Inputs/4');
     add_line(path, 'Hot Viscosity Pa s/1', 'Hot Cold Viscosity Sum/1');
     add_line(path, 'Cold Viscosity Pa s/1', 'Hot Cold Viscosity Sum/2');
     add_line(path, 'Hot Cold Viscosity Sum/1', 'Average Viscosity Pa s/1');
-    add_line(path, 'FlowCapacityFactor/1', 'Pressure Drop Inputs/6');
+    add_line(path, 'FlowCapacityFactor/1', 'Pressure Drop Inputs/5');
     add_line(path, 'Fixed Pipe Length m/1', 'Total External Pipe Length m/1');
     add_line(path, 'FacilityU/1', 'Equivalent Rack Count/1');
     add_line(path, 'U per Rack/1', 'Equivalent Rack Count/2');
     add_line(path, 'Equivalent Rack Count/1', 'Additional Rack Length/1');
     add_line(path, 'Additional Length per Rack m/1', 'Additional Rack Length/2');
     add_line(path, 'Additional Rack Length/1', 'Total External Pipe Length m/2');
-    add_line(path, 'Total External Pipe Length m/1', 'Pressure Drop Inputs/7');
-    add_line(path, 'Pipe Diameter m/1', 'Pressure Drop Inputs/8');
-    add_line(path, 'Pipe Roughness m/1', 'Pressure Drop Inputs/9');
-    add_line(path, 'Fittings K/1', 'Pressure Drop Inputs/10');
+    add_line(path, 'Total External Pipe Length m/1', 'Pressure Drop Inputs/6');
+    add_line(path, 'Pipe Diameter m/1', 'Pressure Drop Inputs/7');
+    add_line(path, 'Pipe Roughness m/1', 'Pressure Drop Inputs/8');
+    add_line(path, 'Fittings K/1', 'Pressure Drop Inputs/9');
     add_line(path, 'Pressure Drop Inputs/1', 'External Pressure Drop Pa/1');
 
     add_line(path, 'HeatFromCDU_kW/1', 'Heat to Tower kW/1');
