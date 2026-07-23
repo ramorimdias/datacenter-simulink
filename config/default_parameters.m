@@ -1,13 +1,17 @@
-%% Default parameters for DataCenter_D2C_TCO_v4
+%% Default parameters for DataCenter_D2C_Interactive_TCO_v5
 % Edit this file, then run build_model.m or run_analysis.m from the
 % repository root.
 %
 % Financial assumptions reproduce the colleague Excel baseline where data
 % were supplied. Parameters not present in that baseline, especially tower
 % performance, remain explicit engineering placeholders.
+%
+% The generated model contains Dashboard Sliders inside the Fluid Properties
+% and Aeration Model subsystems. Slider changes apply during normal-mode
+% simulation. Rebuilding the model restores the values in this file.
 
 %% Model and representative simulation
-model = 'DataCenter_D2C_TCO_v4';
+model = 'DataCenter_D2C_Interactive_TCO_v5';
 simulation_time_s = 3600;
 load_step_time_s = 1800;
 
@@ -71,9 +75,15 @@ k_internal_W_mK = k_external_W_mK;
 
 %% Cold-plate thermal path
 % Total clean-liquid chip/package/TIM/plate/convection resistance for one
-% equivalent cooling path.
+% equivalent cooling path at the reference conductivity below.
 Rth_chip_to_coolant_K_W = 0.020;
 Rth_aeration_sensitivity = 4.0;
+
+% Fraction of the total clean thermal resistance attributed to fluid-side
+% convection. Only this fraction scales inversely with conductivity. The
+% remaining fraction represents package, TIM, plate, and other solid paths.
+coldplate_fluid_side_resistance_fraction = 0.50;
+k_internal_reference_W_mK = 0.49;
 
 %% Entrained free-gas model
 % The Excel baseline is deaerated. Change either value, for example to 0.02
