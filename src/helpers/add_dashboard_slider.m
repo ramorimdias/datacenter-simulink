@@ -19,7 +19,15 @@ function added = add_dashboard_slider(parent_path, slider_name, target_block_nam
                 'Limits', limits, ...
                 'LabelPosition', 'Bottom');
         catch
-            % Older releases may use a different dashboard styling schema.
+            % Some releases reject fractional major-tick intervals. Preserve
+            % the requested minimum and maximum and let Simulink choose ticks.
+            try
+                set_param(slider_path, ...
+                    'Limits', [limits(1) -1 limits(3)], ...
+                    'LabelPosition', 'Bottom');
+            catch
+                % Styling/range setup is optional. Binding is attempted below.
+            end
         end
 
         source = Simulink.HMI.ParamSourceInfo;
