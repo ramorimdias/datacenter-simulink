@@ -194,20 +194,47 @@ add_line(model, 'Inputs/29', 'Coolant Per U Inputs/2', 'autorouting', 'on');
 add_line(model, 'Coolant Per U Inputs/1', 'Coolant Flow per U m3_h/1', 'autorouting', 'on');
 
 display_defs = {
-    'PUE (x)',                  'Facility Energy and Cost/7', [1800 40 2025 75];
-    'Internal loop pump (kW)',  'Rack CDU and Internal Loop/3', [1800 95 2025 130];
-    'External loop pump (kW)',  'Facility PG25 Loop/3', [1800 150 2025 185];
+    'PUE (x)', 'Facility Energy and Cost/7', [1800 40 2025 75];
+    'Internal Loop pump electrical (kW)', 'Rack CDU and Internal Loop/3', [1800 95 2025 130];
+    'External Loop pump electrical (kW)', 'Facility PG25 Loop/3', [1800 150 2025 185];
     'Cooling tower power (kW)', 'Cooling Tower/2', [1800 205 2025 240];
     'Nominal facility TCO ($)', 'TCO Financial Model/2', [1800 265 2025 300];
     'Annual facility energy (kWh)', 'Facility Energy and Cost/8', [1800 325 2025 360];
-    'Chip temperature (C)',     'Rack CDU and Internal Loop/5', [1800 385 2025 420];
-    'Total coolant flow (m3 per h)', 'Rack CDU and Internal Loop/2', [1800 445 2025 480];
-    'Coolant flow per U (m3 per h)', 'Coolant Flow per U m3_h/1', [1800 565 2025 600]
+    'Chip temperature (C)', 'Rack CDU and Internal Loop/5', [1800 385 2025 420];
+    'Useful liquid flow (m3 per h)', 'Rack CDU and Internal Loop/2', [1800 445 2025 480];
+    'Useful liquid flow per U (m3 per h)', 'Coolant Flow per U m3_h/1', [1800 565 2025 600]
 };
 for idx = 1:size(display_defs,1)
     add_block('simulink/Sinks/Display', [model '/' display_defs{idx,1}], ...
         'Position', display_defs{idx,3});
     add_line(model, display_defs{idx,2}, [display_defs{idx,1} '/1'], ...
+        'autorouting', 'on');
+end
+
+% Export principal results as Timeseries for reproducible analysis scripts.
+monitor_sources = {
+    'Facility Energy and Cost/7', 'PUE_period';
+    'Rack CDU and Internal Loop/3', 'P_internal_loop_pump_kW';
+    'Facility PG25 Loop/3', 'P_external_loop_pump_kW';
+    'Cooling Tower/2', 'P_tower_kW';
+    'TCO Financial Model/2', 'TCO_nominal_facility';
+    'Facility Energy and Cost/8', 'E_annual_facility_kWh';
+    'Facility Energy and Cost/9', 'E_annual_cooling_kWh';
+    'Facility Energy and Cost/1', 'P_facility_kW';
+    'Facility Energy and Cost/10', 'P_cooling_kW';
+    'Rack CDU and Internal Loop/5', 'T_chip_C';
+    'Rack CDU and Internal Loop/2', 'flow_coolant_total_m3h';
+    'Coolant Flow per U m3_h/1', 'flow_coolant_per_U_m3h'
+};
+xout = 2070;
+yout = 35;
+for idx = 1:size(monitor_sources,1)
+    block_name = ['Output ' monitor_sources{idx,2}];
+    add_block('simulink/Sinks/To Workspace', [model '/' block_name], ...
+        'VariableName', monitor_sources{idx,2}, ...
+        'SaveFormat', 'Timeseries', ...
+        'Position', [xout yout+(idx-1)*28 xout+180 yout+20+(idx-1)*28]);
+    add_line(model, monitor_sources{idx,1}, [block_name '/1'], ...
         'autorouting', 'on');
 end
 

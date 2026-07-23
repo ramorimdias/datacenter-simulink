@@ -61,23 +61,51 @@ Pa.s before leaving the block.
 
 Property effects in the current reduced-order model:
 
-- `Cp x density` controls required volumetric flow for the selected delta T.
-- density and viscosity affect the pressure-drop and pump-power correlation.
-- internal-loop thermal conductivity modifies the fluid-side fraction of the
+- `Cp x density` controls the useful liquid flow required for the selected
+  temperature rise.
+- Density and viscosity affect the pressure-drop and pump-power correlation.
+- Internal-loop thermal conductivity modifies the fluid-side fraction of the
   chip-to-coolant thermal resistance.
-- external-loop conductivity is exposed for monitoring and future
-  heat-exchanger/tower correlations but is not yet used independently.
+- External-loop conductivity is exposed for monitoring and future
+  heat-exchanger and tower correlations but is not yet used independently.
 
 ## Aeration Model block
 
 `air_void_fraction_internal` and `air_void_fraction_external` represent
-entrained free-gas volume fraction, not dissolved gas. The block calculates:
+entrained free-gas volume fraction, not dissolved gas.
 
-- effective volumetric heat capacity;
-- effective mixture density;
-- pump flow-capacity derating;
-- pump-efficiency derating;
+The current implementation separates useful liquid flow from total pump
+mixture flow:
+
+```text
+Q_mixture = Q_liquid / (1 - alpha)
+```
+
+The block calculates:
+
+- clean-liquid volumetric heat capacity, `rho x Cp`;
+- homogeneous gas-liquid mixture density;
+- constant-liquid-flow mixture multiplier, `1/(1-alpha)`;
+- pump hydraulic-efficiency correction ratio;
 - effective chip-to-coolant thermal resistance.
+
+The pump efficiency used for electrical power is:
+
+```text
+eta_effective =
+    eta_clean_pump
+    x aeration_efficiency_ratio
+    x eta_motor
+    x eta_VFD
+```
+
+The clean pump efficiencies, motor efficiencies, and VFD efficiencies are
+configured separately for the internal and external loops.
+
+The pressure-loss model uses mixture velocity and mixture density. Optional
+two-phase pressure-drop coefficients are provided for calibration against loop
+or component measurements. They default to zero because they are not universal
+physical constants.
 
 The clean-liquid thermal resistance is split conceptually into a solid-side and
 fluid-side fraction. Only the configured fluid-side fraction scales with
@@ -88,9 +116,58 @@ Rth_clean = Rth_reference x [(1-f_fluid) + f_fluid x k_reference/k]
 Rth_effective = Rth_clean x (1 + C_aeration x alpha)
 ```
 
-The derating coefficients are calibration parameters, not universal physical
-constants. They should later be replaced with measured pump and cold-plate
-maps.
+The aeration efficiency and thermal-resistance coefficients remain calibration
+parameters. Replace them with measured pump and cold-plate maps when available.
+
+## Pump and hydraulic accounting
+
+The internal and external hydraulic subsystems calculate three distinct values:
+
+1. **Useful liquid flow**, required by heat duty and target temperature rise.
+2. **Pump mixture flow**, equal to liquid flow plus free-gas volume.
+3. **Electrical pump power**, including pump hydraulic efficiency, motor
+   efficiency, and VFD efficiency.
+
+Pump shaft power, rather than total electrical input, is added to the downstream
+liquid heat load. Motor and VFD losses remain electrical losses outside the
+hydraulic circuit.
+
+The internal cold-plate pressure loss is referenced at the clean design branch
+flow and scales with branch mixture flow squared. The remaining piping and
+fitting losses use Darcy-Weisbach with a blended laminar and turbulent friction
+factor.
+
+## Aeration pumping-cost comparison
+
+Run:
+
+```matlab
+comparison = run_aeration_comparison;
+```
+
+or specify cases:
+
+```matlab
+comparison = run_aeration_comparison([0 0.01 0.02 0.05]);
+```
+
+The workflow rebuilds the model once, applies each free-gas fraction to both
+loops, maintains the same useful liquid-flow requirement, and exports:
+
+```text
+results/aeration_pumping_comparison.csv
+```
+
+Reported values include:
+
+- useful liquid flow;
+- pump mixture flow;
+- internal and external electrical pump power;
+- pumping-power increase versus the clean case;
+- annual pumping energy;
+- annual pumping cost;
+- annual cost difference versus the clean case;
+- period PUE.
 
 ## Excel baseline currently implemented
 
@@ -119,12 +196,15 @@ assumption was supplied:
 - 8,000 currency units per full-drain disposal event
 - 25,000 currency units/year maintenance and monitoring
 
-The hydraulic model is calibrated so that internal plus external PG25 pump
-power at the 10 MW design point matches:
+The Excel pump target remains available for comparison:
 
 ```text
 10,000 kW x 1.2% x 1.30 = 156 kW
 ```
+
+Active Simulink pump outputs are calculated from the hydraulic equations and
+configured pump, motor, and VFD efficiencies. They are not recalibrated to the
+Excel target.
 
 Cooling-tower performance and power were not included in the supplied Excel
 baseline. Tower parameters remain explicit engineering placeholders in
@@ -137,14 +217,15 @@ data.
   price, operating period, and live scenario controls.
 - **Fluid Properties**: separate internal/external fluid properties, sliders,
   unit conversion, and live displays.
-- **Aeration Model**: free-gas controls, mixture properties, pump derating, and
-  thermal-resistance adjustment.
+- **Aeration Model**: free-gas controls, mixture properties, mixture-flow
+  multiplier, pump-efficiency correction, and thermal-resistance adjustment.
 - **IT Racks**: equivalent 48U rack population, IT power, and liquid heat
   capture.
-- **Rack CDU and Internal Loop**: internal flow, pressure drop, pump power, CDU
-  approach, and chip-temperature estimate using live upstream signals.
-- **Facility PG25 Loop**: external flow, pressure drop, pump power, and return
-  temperature using live upstream signals.
+- **Rack CDU and Internal Loop**: useful liquid flow, pump mixture flow,
+  pressure drop, shaft and electrical pump power, CDU approach, and
+  chip-temperature estimate.
+- **Facility PG25 Loop**: useful liquid flow, pump mixture flow, pressure drop,
+  shaft and electrical pump power, and return temperature.
 - **Cooling Tower**: supply temperature, load and flow corrections, fan power,
   spray-pump power, and capacity margin.
 - **Facility Energy and Cost**: facility and cooling power, instantaneous and
@@ -239,7 +320,14 @@ were supplied for them.
 
 ## Model fidelity
 
-This is a broad-scope reduced-order model. The subsystem interfaces are
+This remains a broad-scope reduced-order model. The subsystem interfaces are
 intended to remain stable while internal correlations are progressively
-replaced by Simscape Fluids components, pump maps, heat-exchanger data, and
-cooling-tower performance maps.
+replaced by:
+
+- manufacturer clean-liquid pump maps;
+- gas-liquid head and brake-power correction maps;
+- pressure-dependent local gas volume fractions;
+- component-specific two-phase pressure-loss maps;
+- cold-plate flow-distribution measurements;
+- air-separator and degasser models;
+- validated Simscape Fluids networks.
