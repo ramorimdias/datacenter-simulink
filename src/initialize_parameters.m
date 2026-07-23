@@ -223,6 +223,7 @@ nonenergy_nominal_total_horizon = sum(nonenergy_opex_by_year);
 
 electricity_nominal_price_factor_horizon = ...
     sum(electricity_price_by_year);
+general_cost_factor_horizon = sum(general_cost_factor_by_year);
 
 %% Build summary
 fprintf('\nBuilding %s\n', model);

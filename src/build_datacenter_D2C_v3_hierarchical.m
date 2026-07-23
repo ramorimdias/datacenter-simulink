@@ -47,7 +47,6 @@ pos.aeration = [520 40 790 340];
 pos.cdu      = [830 40 1110 340];
 pos.loop     = [1150 40 1430 340];
 pos.tower    = [1470 40 1750 340];
-pos.outputs  = [30 390 700 750];
 pos.energy   = [760 390 1060 700];
 pos.tco      = [1120 390 1420 700];
 
@@ -66,8 +65,6 @@ build_facility_loop_subsystem([model '/Facility PG25 Loop']);
 build_tower_subsystem([model '/Cooling Tower']);
 build_energy_cost_subsystem([model '/Facility Energy and Cost']);
 build_tco_subsystem([model '/TCO Financial Model']);
-add_subsystem(model, 'Outputs', pos.outputs, 'red');
-build_outputs_subsystem([model '/Outputs']);
 % Simscape integration is intentionally disabled for this native reduced-order
 % model.  The hydraulic equations are implemented explicitly in the two loop
 % subsystems below.
@@ -166,42 +163,10 @@ add_line(model, 'Facility Energy and Cost/8', 'TCO Financial Model/1', ...
     'autorouting', 'on');
 add_line(model, 'Facility Energy and Cost/9', 'TCO Financial Model/2', ...
     'autorouting', 'on');
-
-% Centralized user-facing outputs.
-add_line(model, 'Facility Energy and Cost/7', 'Outputs/1', 'autorouting', 'on');
-add_line(model, 'Rack CDU and Internal Loop/3', 'Outputs/2', 'autorouting', 'on');
-add_line(model, 'Facility PG25 Loop/3', 'Outputs/3', 'autorouting', 'on');
-add_line(model, 'Cooling Tower/2', 'Outputs/4', 'autorouting', 'on');
-add_line(model, 'TCO Financial Model/2', 'Outputs/5', 'autorouting', 'on');
-add_line(model, 'Facility Energy and Cost/8', 'Outputs/6', 'autorouting', 'on');
-add_line(model, 'Rack CDU and Internal Loop/5', 'Outputs/7', 'autorouting', 'on');
-add_line(model, 'Rack CDU and Internal Loop/2', 'Outputs/8', 'autorouting', 'on');
-add_line(model, 'Inputs/29', 'Outputs/9', 'autorouting', 'on');
-
-%% 4. TOP-LEVEL MONITORING
-monitor_sources = {
-    'Outputs/1', 'PUE';
-    'Outputs/2', 'P_internal_loop_pump_kW';
-    'Outputs/3', 'P_external_loop_pump_kW';
-    'Outputs/4', 'P_tower_kW';
-    'Outputs/5', 'TCO_nominal_facility';
-    'Outputs/6', 'E_annual_facility_kWh';
-    'Outputs/7', 'T_chip_C';
-    'Outputs/8', 'flow_coolant_total_m3h';
-    'Outputs/9', 'flow_coolant_per_U_m3h'
-};
-
-xout = 1980;
-yout = 35;
-for idx = 1:size(monitor_sources,1)
-    block_name = ['Output ' monitor_sources{idx,2}];
-    add_block('simulink/Sinks/To Workspace', [model '/' block_name], ...
-        'VariableName', monitor_sources{idx,2}, ...
-        'SaveFormat', 'Timeseries', ...
-        'Position', [xout yout+(idx-1)*28 xout+175 yout+20+(idx-1)*28]);
-    add_line(model, monitor_sources{idx,1}, [block_name '/1'], ...
-        'autorouting', 'on');
-end
+add_line(model, 'Inputs/30', 'TCO Financial Model/3', 'autorouting', 'on');
+add_line(model, 'Inputs/31', 'TCO Financial Model/4', 'autorouting', 'on');
+add_line(model, 'Inputs/32', 'TCO Financial Model/5', 'autorouting', 'on');
+add_line(model, 'Inputs/33', 'TCO Financial Model/6', 'autorouting', 'on');
 
 % Use fixed-point formatting for all numeric displays so large values remain
 % readable (for example 18,000,000 instead of 1.8e7).
@@ -213,6 +178,33 @@ for idx = 1:numel(display_blocks)
     catch
         % Formatting is cosmetic and varies slightly by Simulink release.
     end
+end
+
+% Final user-facing displays are placed to the right of the workflow.
+add_block('simulink/Signal Routing/Mux', [model '/Coolant Per U Inputs'], ...
+    'Inputs', '2', 'Position', [1780 510 1800 570]);
+add_block('simulink/User-Defined Functions/Fcn', [model '/Coolant Flow per U m3_h'], ...
+    'Expr', 'u(1)/u(2)', 'Position', [1830 515 1980 555]);
+add_line(model, 'Rack CDU and Internal Loop/2', 'Coolant Per U Inputs/1', 'autorouting', 'on');
+add_line(model, 'Inputs/29', 'Coolant Per U Inputs/2', 'autorouting', 'on');
+add_line(model, 'Coolant Per U Inputs/1', 'Coolant Flow per U m3_h/1', 'autorouting', 'on');
+
+display_defs = {
+    'PUE (x)',                  'Facility Energy and Cost/7', [1800 40 2025 75];
+    'Internal loop pump (kW)',  'Rack CDU and Internal Loop/3', [1800 95 2025 130];
+    'External loop pump (kW)',  'Facility PG25 Loop/3', [1800 150 2025 185];
+    'Cooling tower power (kW)', 'Cooling Tower/2', [1800 205 2025 240];
+    'Nominal facility TCO ($)', 'TCO Financial Model/2', [1800 265 2025 300];
+    'Annual facility energy (kWh)', 'Facility Energy and Cost/8', [1800 325 2025 360];
+    'Chip temperature (C)',     'Rack CDU and Internal Loop/5', [1800 385 2025 420];
+    'Total coolant flow (m3 per h)', 'Rack CDU and Internal Loop/2', [1800 445 2025 480];
+    'Coolant flow per U (m3 per h)', 'Coolant Flow per U m3_h/1', [1800 565 2025 600]
+};
+for idx = 1:size(display_defs,1)
+    add_block('simulink/Sinks/Display', [model '/' display_defs{idx,1}], ...
+        'Position', display_defs{idx,3});
+    add_line(model, display_defs{idx,2}, [display_defs{idx,1} '/1'], ...
+        'autorouting', 'on');
 end
 
 % Whole-model visual convention: editable parameter sources are orange and
@@ -227,6 +219,35 @@ for idx = 1:numel(viscosity_displays)
     try
         set_param(viscosity_displays{idx}, 'Format', 'long');
     catch
+    end
+end
+
+% Consistent user-facing terminology. Keep compact signal identifiers such as
+% InternalViscosity_Pa_s unchanged; only visible block labels are renamed.
+try
+    set_param([model '/Facility PG25 Loop'], 'Name', 'Facility External Loop');
+catch
+end
+all_blocks = find_system(model, 'LookUnderMasks', 'all', 'FollowLinks', 'on', ...
+    'Type', 'Block');
+for idx = numel(all_blocks):-1:1
+    block_path = all_blocks{idx};
+    try
+        block_name = get_param(block_path, 'Name');
+        % Protect already-correct phrases before expanding standalone words.
+        renamed = strrep(block_name, 'Internal Loop', '__INTERNAL_LOOP__');
+        renamed = strrep(renamed, 'External Loop', '__EXTERNAL_LOOP__');
+        renamed = strrep(renamed, 'Internal loop', '__INTERNAL_LOOP__');
+        renamed = strrep(renamed, 'External loop', '__EXTERNAL_LOOP__');
+        renamed = strrep(renamed, 'Internal ', 'Internal Loop ');
+        renamed = strrep(renamed, 'External ', 'External Loop ');
+        renamed = strrep(renamed, '__INTERNAL_LOOP__', 'Internal Loop');
+        renamed = strrep(renamed, '__EXTERNAL_LOOP__', 'External Loop');
+        if ~strcmp(block_name, renamed)
+            set_param(block_path, 'Name', renamed);
+        end
+    catch
+        % Naming is cosmetic; leave any release-specific block untouched.
     end
 end
 
