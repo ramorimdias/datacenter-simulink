@@ -10,21 +10,15 @@ function build_cdu_subsystem(path)
     add_in(path, 'EfficiencyFactor', 7, [25 365 55 385]);
     add_in(path, 'EffectiveRth_K_W', 8, [25 415 55 435]);
     add_in(path, 'FacilityU', 9, [25 455 55 475]);
+    add_in(path, 'InternalFixedPipeLength_m', 10, [25 495 55 515]);
+    add_in(path, 'InternalPipeDiameter_m', 11, [25 535 55 555]);
+    add_in(path, 'InternalPipeRoughness_m', 12, [25 575 55 595]);
+    add_in(path, 'InternalFittingsK', 13, [25 615 55 635]);
+    add_in(path, 'ColdplatePressureDrop_Pa', 14, [25 655 55 675]);
+    add_in(path, 'ColdplatesPerU', 15, [25 695 55 715]);
 
     add_block('simulink/Signal Routing/Mux', [path '/Hydraulic Inputs'], ...
         'Inputs', '11', 'Position', [105 430 125 700]);
-    add_block('simulink/Sources/Constant', [path '/Fixed Pipe Length m'], 'Value', ...
-        num2str(evalin('base','internal_fixed_pipe_length_m'),15), 'Position', [175 430 285 455]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Diameter m'], 'Value', ...
-        num2str(evalin('base','internal_pipe_diameter_m'),15), 'Position', [175 465 285 490]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Roughness m'], 'Value', ...
-        num2str(evalin('base','internal_pipe_roughness_m'),15), 'Position', [175 500 285 525]);
-    add_block('simulink/Sources/Constant', [path '/Fittings K'], 'Value', ...
-        num2str(evalin('base','internal_fittings_loss_coefficient'),15), 'Position', [175 535 285 560]);
-    add_block('simulink/Sources/Constant', [path '/Coldplate dP Pa'], 'Value', ...
-        num2str(evalin('base','coldplate_pressure_drop_Pa'),15), 'Position', [175 570 285 595]);
-    add_block('simulink/Sources/Constant', [path '/Coldplates per U'], 'Value', ...
-        num2str(evalin('base','coldplates_per_U'),15), 'Position', [175 605 285 630]);
     add_block('simulink/Math Operations/Product', [path '/Total Coldplate Paths'], ...
         'Inputs', '**', 'Position', [320 605 390 640]);
 
@@ -101,13 +95,13 @@ function build_cdu_subsystem(path)
     add_line(path, 'InternalDensity_kg_m3/1', 'Hydraulic Inputs/3');
     add_line(path, 'InternalViscosity_Pa_s/1', 'Hydraulic Inputs/4');
     add_line(path, 'FlowCapacityFactor/1', 'Hydraulic Inputs/5');
-    add_line(path, 'Fixed Pipe Length m/1', 'Hydraulic Inputs/6');
-    add_line(path, 'Pipe Diameter m/1', 'Hydraulic Inputs/7');
-    add_line(path, 'Pipe Roughness m/1', 'Hydraulic Inputs/8');
-    add_line(path, 'Fittings K/1', 'Hydraulic Inputs/9');
-    add_line(path, 'Coldplate dP Pa/1', 'Hydraulic Inputs/10');
+    add_line(path, 'InternalFixedPipeLength_m/1', 'Hydraulic Inputs/6');
+    add_line(path, 'InternalPipeDiameter_m/1', 'Hydraulic Inputs/7');
+    add_line(path, 'InternalPipeRoughness_m/1', 'Hydraulic Inputs/8');
+    add_line(path, 'InternalFittingsK/1', 'Hydraulic Inputs/9');
+    add_line(path, 'ColdplatePressureDrop_Pa/1', 'Hydraulic Inputs/10');
     add_line(path, 'FacilityU/1', 'Total Coldplate Paths/1');
-    add_line(path, 'Coldplates per U/1', 'Total Coldplate Paths/2');
+    add_line(path, 'ColdplatesPerU/1', 'Total Coldplate Paths/2');
     add_line(path, 'Total Coldplate Paths/1', 'Hydraulic Inputs/11');
     add_line(path, 'Hydraulic Inputs/1', 'Internal Reynolds Number/1');
     add_line(path, 'Hydraulic Inputs/1', 'Internal Friction Factor/1');

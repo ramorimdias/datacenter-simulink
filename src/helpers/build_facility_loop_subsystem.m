@@ -9,19 +9,13 @@ function build_facility_loop_subsystem(path)
     add_in(path, 'FlowCapacityFactor', 6, [25 315 55 335]);
     add_in(path, 'EfficiencyFactor', 7, [25 365 55 385]);
     add_in(path, 'FacilityU', 8, [25 415 55 435]);
+    add_in(path, 'ExternalFixedPipeLength_m', 9, [25 455 55 475]);
+    add_in(path, 'ExternalUPerRack', 10, [25 495 55 515]);
+    add_in(path, 'AdditionalLengthPerRack_m', 11, [25 535 55 555]);
+    add_in(path, 'ExternalPipeDiameter_m', 12, [25 575 55 595]);
+    add_in(path, 'ExternalPipeRoughness_m', 13, [25 615 55 635]);
+    add_in(path, 'ExternalFittingsK', 14, [25 655 55 675]);
 
-    add_block('simulink/Sources/Constant', [path '/Fixed Pipe Length m'], 'Value', ...
-        num2str(evalin('base','external_fixed_pipe_length_m'),15), 'Position', [175 430 285 455]);
-    add_block('simulink/Sources/Constant', [path '/U per Rack'], 'Value', ...
-        num2str(evalin('base','rack_U'),15), 'Position', [175 470 285 495]);
-    add_block('simulink/Sources/Constant', [path '/Additional Length per Rack m'], 'Value', ...
-        num2str(evalin('base','additional_external_pipe_length_per_rack_m'),15), 'Position', [175 510 285 535]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Diameter m'], 'Value', ...
-        num2str(evalin('base','external_pipe_diameter_m'),15), 'Position', [175 550 285 575]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Roughness m'], 'Value', ...
-        num2str(evalin('base','external_pipe_roughness_m'),15), 'Position', [175 590 285 615]);
-    add_block('simulink/Sources/Constant', [path '/Fittings K'], 'Value', ...
-        num2str(evalin('base','external_fittings_loss_coefficient'),15), 'Position', [175 630 285 655]);
     add_block('simulink/Math Operations/Product', [path '/Equivalent Rack Count'], ...
         'Inputs', '*/', 'Position', [350 435 420 475]);
     add_block('simulink/Math Operations/Product', [path '/Additional Rack Length'], ...
@@ -88,10 +82,10 @@ function build_facility_loop_subsystem(path)
     end
 
     add_line(path, 'FacilityU/1', 'Equivalent Rack Count/1');
-    add_line(path, 'U per Rack/1', 'Equivalent Rack Count/2');
+    add_line(path, 'ExternalUPerRack/1', 'Equivalent Rack Count/2');
     add_line(path, 'Equivalent Rack Count/1', 'Additional Rack Length/1');
-    add_line(path, 'Additional Length per Rack m/1', 'Additional Rack Length/2');
-    add_line(path, 'Fixed Pipe Length m/1', 'Total External Pipe Length m/1');
+    add_line(path, 'AdditionalLengthPerRack_m/1', 'Additional Rack Length/2');
+    add_line(path, 'ExternalFixedPipeLength_m/1', 'Total External Pipe Length m/1');
     add_line(path, 'Additional Rack Length/1', 'Total External Pipe Length m/2');
 
     add_line(path, 'HeatFromCDU_kW/1', 'Hydraulic Inputs/1');
@@ -100,9 +94,9 @@ function build_facility_loop_subsystem(path)
     add_line(path, 'ExternalViscosity_Pa_s/1', 'Hydraulic Inputs/4');
     add_line(path, 'FlowCapacityFactor/1', 'Hydraulic Inputs/5');
     add_line(path, 'Total External Pipe Length m/1', 'Hydraulic Inputs/6');
-    add_line(path, 'Pipe Diameter m/1', 'Hydraulic Inputs/7');
-    add_line(path, 'Pipe Roughness m/1', 'Hydraulic Inputs/8');
-    add_line(path, 'Fittings K/1', 'Hydraulic Inputs/9');
+    add_line(path, 'ExternalPipeDiameter_m/1', 'Hydraulic Inputs/7');
+    add_line(path, 'ExternalPipeRoughness_m/1', 'Hydraulic Inputs/8');
+    add_line(path, 'ExternalFittingsK/1', 'Hydraulic Inputs/9');
     add_line(path, 'Hydraulic Inputs/1', 'External Reynolds Number/1');
     add_line(path, 'Hydraulic Inputs/1', 'External Friction Factor/1');
     add_line(path, 'Hydraulic Inputs/1', 'External Pressure Drop Pa/1');

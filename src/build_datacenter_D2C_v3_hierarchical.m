@@ -4,8 +4,7 @@
 % subsystem contains the detailed correlations used by that organ.
 %
 % Top-level organs:
-%   Operating Scenario
-%   Fluid Properties
+%   Inputs (Operating Scenario, Fluid Properties, Facility/Hydraulic Hypotheses)
 %   Aeration Model
 %   IT Racks
 %   Rack CDU and Internal Loop
@@ -44,8 +43,7 @@ set_param(model, ...
 
 % Top-level subsystem positions. The model is intentionally wide so the
 % physical information flow remains readable from left to right.
-pos.scenario = [35 80 210 260];
-pos.fluid    = [260 50 500 300];
+pos.inputs   = [35 40 700 700];
 pos.aeration = [550 40 810 310];
 pos.racks    = [860 95 1030 235];
 pos.cdu      = [1080 40 1320 310];
@@ -54,8 +52,7 @@ pos.tower    = [1640 40 1860 310];
 pos.energy   = [850 390 1100 635];
 pos.tco      = [1170 390 1420 635];
 
-add_subsystem(model, 'Operating Scenario', pos.scenario, 'lightBlue');
-add_subsystem(model, 'Fluid Properties', pos.fluid, 'lightBlue');
+add_subsystem(model, 'Inputs', pos.inputs, 'orange');
 add_subsystem(model, 'Aeration Model', pos.aeration, 'gray');
 add_subsystem(model, 'IT Racks', pos.racks, 'lightGreen');
 add_subsystem(model, 'Rack CDU and Internal Loop', pos.cdu, 'yellow');
@@ -64,8 +61,7 @@ add_subsystem(model, 'Cooling Tower', pos.tower, 'cyan');
 add_subsystem(model, 'Facility Energy and Cost', pos.energy, 'magenta');
 add_subsystem(model, 'TCO Financial Model', pos.tco, 'gray');
 
-build_scenario_subsystem([model '/Operating Scenario']);
-build_fluid_properties_subsystem([model '/Fluid Properties']);
+build_inputs_subsystem([model '/Inputs']);
 build_aeration_subsystem([model '/Aeration Model']);
 build_it_racks_subsystem([model '/IT Racks']);
 build_cdu_subsystem([model '/Rack CDU and Internal Loop']);
@@ -78,21 +74,32 @@ build_tco_subsystem([model '/TCO Financial Model']);
 % subsystems below.
 
 %% 3. TOP-LEVEL CONNECTIONS
-% Scenario to racks and tower.
-add_line(model, 'Operating Scenario/1', 'IT Racks/1', 'autorouting', 'on');
-add_line(model, 'Operating Scenario/2', 'Cooling Tower/4', ...
+% Centralized inputs to racks, tower, and energy accounting.
+add_line(model, 'Inputs/1', 'IT Racks/1', 'autorouting', 'on');
+add_line(model, 'Inputs/2', 'Cooling Tower/4', ...
     'autorouting', 'on');
-add_line(model, 'Operating Scenario/3', 'Facility Energy and Cost/5', ...
+add_line(model, 'Inputs/3', 'Facility Energy and Cost/5', ...
     'autorouting', 'on');
-add_line(model, 'Operating Scenario/4', 'Facility Energy and Cost/6', ...
+add_line(model, 'Inputs/4', 'Facility Energy and Cost/6', ...
     'autorouting', 'on');
+add_line(model, 'Inputs/13', 'IT Racks/2', 'autorouting', 'on');
+add_line(model, 'Inputs/14', 'IT Racks/3', 'autorouting', 'on');
+% Centralized hydraulic hypotheses.
+for i = 1:6
+    add_line(model, ['Inputs/' num2str(14+i)], ...
+        ['Rack CDU and Internal Loop/' num2str(9+i)], 'autorouting', 'on');
+end
+for i = 1:6
+    add_line(model, ['Inputs/' num2str(20+i)], ...
+        ['Facility PG25 Loop/' num2str(8+i)], 'autorouting', 'on');
+end
 
 % Clean-liquid properties into the aeration model.
-add_line(model, 'Fluid Properties/1', 'Aeration Model/1', 'autorouting', 'on');
-add_line(model, 'Fluid Properties/2', 'Aeration Model/2', 'autorouting', 'on');
-add_line(model, 'Fluid Properties/4', 'Aeration Model/3', 'autorouting', 'on');
-add_line(model, 'Fluid Properties/5', 'Aeration Model/4', 'autorouting', 'on');
-add_line(model, 'Fluid Properties/6', 'Aeration Model/5', 'autorouting', 'on');
+add_line(model, 'Inputs/5', 'Aeration Model/1', 'autorouting', 'on');
+add_line(model, 'Inputs/6', 'Aeration Model/2', 'autorouting', 'on');
+add_line(model, 'Inputs/8', 'Aeration Model/3', 'autorouting', 'on');
+add_line(model, 'Inputs/9', 'Aeration Model/4', 'autorouting', 'on');
+add_line(model, 'Inputs/10', 'Aeration Model/5', 'autorouting', 'on');
 
 % IT racks to CDU.
 add_line(model, 'IT Racks/2', 'Rack CDU and Internal Loop/1', ...
@@ -113,7 +120,7 @@ add_line(model, 'Aeration Model/3', 'Rack CDU and Internal Loop/3', ...
     'autorouting', 'on');
 add_line(model, 'Aeration Model/4', 'Rack CDU and Internal Loop/4', ...
     'autorouting', 'on');
-add_line(model, 'Fluid Properties/3', 'Rack CDU and Internal Loop/5', ...
+add_line(model, 'Inputs/7', 'Rack CDU and Internal Loop/5', ...
     'autorouting', 'on');
 add_line(model, 'Aeration Model/5', 'Rack CDU and Internal Loop/6', ...
     'autorouting', 'on');
@@ -132,7 +139,7 @@ add_line(model, 'Aeration Model/8', 'Facility PG25 Loop/3', ...
     'autorouting', 'on');
 add_line(model, 'Aeration Model/9', 'Facility PG25 Loop/4', ...
     'autorouting', 'on');
-add_line(model, 'Fluid Properties/7', 'Facility PG25 Loop/5', ...
+add_line(model, 'Inputs/11', 'Facility PG25 Loop/5', ...
     'autorouting', 'on');
 add_line(model, 'Aeration Model/10', 'Facility PG25 Loop/6', ...
     'autorouting', 'on');
@@ -265,7 +272,7 @@ add_line(model, 'Main Scope Mux/1', 'Main Scope/1', 'autorouting', 'on');
 Simulink.Annotation(model, sprintf([ ...
     'DIRECT-TO-CHIP DATA CENTER - INTERACTIVE EXCEL BASELINE\n' ...
     '10 MW IT, 10 K design delta T, 8760 h/year, PG25 assumptions.\n' ...
-    'Double-click Fluid Properties or Aeration Model to access live ' ...
+    'Double-click Inputs (nested sections) or Aeration Model to access live ' ...
     'Dashboard Sliders and numeric displays.']));
 
 %% 5. SAVE
@@ -274,5 +281,5 @@ open_system(model);
 
 fprintf('\nCreated: %s\n', fullfile(repo_root, [model '.slx']));
 fprintf('Run with: simOut = sim(''%s'');\n', model);
-fprintf('Open Fluid Properties and Aeration Model for live controls.\n');
+fprintf('Open Inputs (nested sections) and Aeration Model for live controls.\n');
 fprintf('For the annual cash-flow table, run: run_analysis\n\n');
