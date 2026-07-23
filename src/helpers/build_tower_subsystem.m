@@ -1,10 +1,22 @@
 function build_tower_subsystem(path)
 % Reduced-order closed-circuit cooling-tower black box.
+%
+% The tower responds to actual heat load, useful liquid flow, loop range, and
+% ambient wet-bulb temperature. Pump-efficiency degradation is accounted for
+% in pump electrical power and shaft heat upstream; it is not applied again as
+% a direct tower-load multiplier.
+
     add_in(path, 'HeatLoad_kW', 1, [25 45 55 65]);
     add_in(path, 'Flow_m3h', 2, [25 115 55 135]);
     add_in(path, 'LoopDeltaT_K', 3, [25 185 55 205]);
     add_in(path, 'AmbientWetBulb_C', 4, [25 255 55 275]);
     add_in(path, 'ExternalLoopEfficiencyFactor', 5, [25 325 55 345]);
+
+    % Retain input 5 for subsystem-interface compatibility. The signal is
+    % intentionally not used because pump losses already enter through the
+    % electrical accounting and pump shaft heat.
+    add_block('simulink/Sinks/Terminator', [path '/Legacy Aeration Input'], ...
+        'Position', [105 320 125 350]);
 
     % Load ratio.
     add_block('simulink/Math Operations/Gain', [path '/Load Ratio'], ...
@@ -16,9 +28,6 @@ function build_tower_subsystem(path)
     add_block('simulink/Math Operations/Math Function', ...
         [path '/Load Ratio Squared'], 'Operator', 'square', ...
         'Position', [355 40 420 75]);
-    add_block('simulink/Math Operations/Product', ...
-        [path '/Aeration Adjusted Load Ratio'], 'Inputs', '*/', ...
-        'Position', [440 35 510 75]);
 
     % Flow ratio and low-flow penalty.
     add_block('simulink/Math Operations/Gain', [path '/Flow Ratio'], ...
@@ -111,9 +120,8 @@ function build_tower_subsystem(path)
 
     add_line(path, 'HeatLoad_kW/1', 'Load Ratio/1');
     add_line(path, 'Load Ratio/1', 'Load Ratio Limited/1');
-    add_line(path, 'Load Ratio Limited/1', 'Aeration Adjusted Load Ratio/1');
-    add_line(path, 'ExternalLoopEfficiencyFactor/1', 'Aeration Adjusted Load Ratio/2');
-    add_line(path, 'Aeration Adjusted Load Ratio/1', 'Load Ratio Squared/1');
+    add_line(path, 'Load Ratio Limited/1', 'Load Ratio Squared/1');
+    add_line(path, 'ExternalLoopEfficiencyFactor/1', 'Legacy Aeration Input/1');
 
     add_line(path, 'Flow_m3h/1', 'Flow Ratio/1');
     add_line(path, 'Flow Ratio/1', 'Flow Ratio Limited/1');
@@ -140,7 +148,7 @@ function build_tower_subsystem(path)
     add_line(path, 'Flow Approach/1', 'Supply Temperature C/4');
     add_line(path, 'Supply Temperature C/1', 'SupplyTemperature_C/1');
 
-    add_line(path, 'Aeration Adjusted Load Ratio/1', 'Fan Demand/1');
+    add_line(path, 'Load Ratio Limited/1', 'Fan Demand/1');
     add_line(path, 'Range Ratio Limited/1', 'Fan Demand/2');
     add_line(path, 'Ambient Factor/1', 'Fan Demand/3');
     add_line(path, 'Fan Demand/1', 'Fan Demand Limited/1');
@@ -148,7 +156,7 @@ function build_tower_subsystem(path)
     add_line(path, 'Fan Demand Squared/1', 'Fan Demand Cubed/1');
     add_line(path, 'Fan Demand Limited/1', 'Fan Demand Cubed/2');
     add_line(path, 'Fan Demand Cubed/1', 'Fan Power kW/1');
-    add_line(path, 'Aeration Adjusted Load Ratio/1', 'Spray Pump Power kW/1');
+    add_line(path, 'Load Ratio Limited/1', 'Spray Pump Power kW/1');
     add_line(path, 'Fan Power kW/1', 'Tower Power kW/1');
     add_line(path, 'Spray Pump Power kW/1', 'Tower Power kW/2');
 
