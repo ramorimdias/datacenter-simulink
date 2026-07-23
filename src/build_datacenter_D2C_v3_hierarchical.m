@@ -251,7 +251,7 @@ input_blocks = find_system(model, 'LookUnderMasks', 'all', ...
     'FollowLinks', 'on', 'BlockType', 'Constant');
 for idx = 1:numel(input_blocks)
     try
-        set_param(input_blocks{idx}, 'BackgroundColor', [1 0.85 0.55]);
+        set_param(input_blocks{idx}, 'BackgroundColor', '[1 0.85 0.55]');
     catch
     end
 end
@@ -262,7 +262,18 @@ output_blocks = [
         'BlockType', 'Display')];
 for idx = 1:numel(output_blocks)
     try
-        set_param(output_blocks{idx}, 'BackgroundColor', [1 0.65 0.65]);
+        set_param(output_blocks{idx}, 'BackgroundColor', '[1 0.65 0.65]');
+    catch
+    end
+end
+
+% Viscosity is a small quantity in Pa.s, so retain enough precision to make
+% values such as 0.00250 visible instead of rounding them to 0.00.
+viscosity_displays = find_system(model, 'LookUnderMasks', 'all', ...
+    'FollowLinks', 'on', 'RegExp', 'on', 'Name', '.*Viscosity Display');
+for idx = 1:numel(viscosity_displays)
+    try
+        set_param(viscosity_displays{idx}, 'Format', 'long');
     catch
     end
 end
