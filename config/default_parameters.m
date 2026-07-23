@@ -113,6 +113,14 @@ external_reference_pressure_drop_Pa = 80e3;
 external_pump_efficiency = 0.70;
 mu_pressure_exponent = 0.20;
 
+% Average-case piping assumptions. The reference pressure drops include
+% fittings, valves, heat exchangers, and the reference pipe run. Changing a
+% run length scales the friction component of the pump requirement.
+internal_pipe_length_m = 100;
+internal_reference_pipe_length_m = 100;
+external_pipe_length_m = 150;
+external_reference_pipe_length_m = 150;
+
 %% Cooling tower / closed-circuit heat-rejection model
 % Tower power and temperature correlations were not supplied in the Excel
 % baseline. These values are therefore visible placeholders to calibrate
