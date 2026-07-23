@@ -42,14 +42,14 @@ set_param(model, ...
 
 % Top-level subsystem positions. The model is intentionally wide so the
 % physical information flow remains readable from left to right.
-pos.inputs   = [35 40 700 700];
-pos.aeration = [550 40 810 310];
-pos.cdu      = [1080 40 1320 310];
-pos.loop     = [1370 40 1590 310];
-pos.tower    = [1640 40 1860 310];
-pos.energy   = [850 390 1100 635];
-pos.tco      = [1170 390 1420 635];
-pos.outputs  = [35 760 720 1135];
+pos.inputs   = [30 40 480 340];
+pos.aeration = [520 40 790 340];
+pos.cdu      = [830 40 1110 340];
+pos.loop     = [1150 40 1430 340];
+pos.tower    = [1470 40 1750 340];
+pos.outputs  = [30 390 700 750];
+pos.energy   = [760 390 1060 700];
+pos.tco      = [1120 390 1420 700];
 
 add_subsystem(model, 'Inputs', pos.inputs, 'orange');
 add_subsystem(model, 'Aeration Model', pos.aeration, 'gray');
