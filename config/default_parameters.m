@@ -113,13 +113,19 @@ external_reference_pressure_drop_Pa = 80e3;
 external_pump_efficiency = 0.70;
 mu_pressure_exponent = 0.20;
 
-% Average-case piping assumptions. The reference pressure drops include
-% fittings, valves, heat exchangers, and the reference pipe run. Changing a
-% run length scales the friction component of the pump requirement.
-internal_pipe_length_m = 100;
-internal_reference_pipe_length_m = 100;
-external_pipe_length_m = 150;
-external_reference_pipe_length_m = 150;
+% Average-case piping assumptions for Darcy-Weisbach pressure loss.
+internal_fixed_pipe_length_m = 50;
+internal_pipe_length_per_U_m = 0.005;
+external_fixed_pipe_length_m = 100;
+additional_external_pipe_length_per_rack_m = 0.24;
+internal_pipe_diameter_m = 0.25;
+external_pipe_diameter_m = 0.30;
+internal_pipe_roughness_m = 1.5e-6;
+external_pipe_roughness_m = 1.5e-6;
+internal_fittings_loss_coefficient = 20;
+external_fittings_loss_coefficient = 15;
+coldplates_per_U = 3;
+coldplate_pressure_drop_Pa = 30000;
 
 %% Cooling tower / closed-circuit heat-rejection model
 % Tower power and temperature correlations were not supplied in the Excel

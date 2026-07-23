@@ -158,6 +158,7 @@ add_line(model, 'Facility Energy and Cost/9', 'TCO Financial Model/2', ...
 %% 4. TOP-LEVEL MONITORING
 monitor_sources = {
     'IT Racks/1',                            'P_IT_kW';
+    'IT Racks/3',                            'facility_U';
     'Rack CDU and Internal Loop/2',          'flow_internal_m3h';
     'Rack CDU and Internal Loop/3',          'P_internal_pump_kW';
     'Rack CDU and Internal Loop/5',          'T_chip_C';
