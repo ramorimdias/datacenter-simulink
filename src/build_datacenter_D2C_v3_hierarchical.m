@@ -244,6 +244,29 @@ for idx = 1:numel(display_blocks)
     end
 end
 
+% Whole-model visual convention: editable parameter sources are orange and
+% monitored/result sinks are red. This makes the user-facing data flow clear
+% even when the parameters live inside a subsystem.
+input_blocks = find_system(model, 'LookUnderMasks', 'all', ...
+    'FollowLinks', 'on', 'BlockType', 'Constant');
+for idx = 1:numel(input_blocks)
+    try
+        set_param(input_blocks{idx}, 'BackgroundColor', [1 0.85 0.55]);
+    catch
+    end
+end
+output_blocks = [
+    find_system(model, 'LookUnderMasks', 'all', 'FollowLinks', 'on', ...
+        'BlockType', 'ToWorkspace');
+    find_system(model, 'LookUnderMasks', 'all', 'FollowLinks', 'on', ...
+        'BlockType', 'Display')];
+for idx = 1:numel(output_blocks)
+    try
+        set_param(output_blocks{idx}, 'BackgroundColor', [1 0.65 0.65]);
+    catch
+    end
+end
+
 add_block('simulink/Signal Routing/Mux', [model '/Main Scope Mux'], ...
     'Inputs', '9', 'Position', [590 405 610 610]);
 add_block('simulink/Sinks/Scope', [model '/Main Scope'], ...
