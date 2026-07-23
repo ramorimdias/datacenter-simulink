@@ -54,6 +54,8 @@ fluid_name = 'PG25';
 cp_external_J_kgK = 3980;
 rho_external_kg_m3 = 1015;
 dynamic_viscosity_external_cP = 2.50;
+dynamic_viscosity_external_hot_cP = 2.50;
+dynamic_viscosity_external_cold_cP = 2.50;
 k_external_W_mK = 0.49;
 freeze_protection_C = -10.0;
 fluid_unit_price_year1_per_L = 3.20;
@@ -70,6 +72,8 @@ annual_maintenance_monitoring_year1 = 25000;
 cp_internal_J_kgK = cp_external_J_kgK;
 rho_internal_kg_m3 = rho_external_kg_m3;
 dynamic_viscosity_internal_cP = dynamic_viscosity_external_cP;
+dynamic_viscosity_internal_hot_cP = dynamic_viscosity_internal_cP;
+dynamic_viscosity_internal_cold_cP = dynamic_viscosity_internal_cP;
 k_internal_W_mK = k_external_W_mK;
 
 %% Cold-plate thermal path

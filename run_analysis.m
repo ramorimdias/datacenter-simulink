@@ -32,8 +32,8 @@ annual_cooling_ts = simOut.get('E_annual_cooling_kWh');
 period_pue_ts = simOut.get('PUE_period');
 facility_power_ts = simOut.get('P_facility_kW');
 cooling_power_ts = simOut.get('P_cooling_kW');
-internal_pump_ts = simOut.get('P_internal_pump_kW');
-external_pump_ts = simOut.get('P_external_pump_kW');
+internal_pump_ts = simOut.get('P_internal_loop_pump_kW');
+external_pump_ts = simOut.get('P_external_loop_pump_kW');
 tower_power_ts = simOut.get('P_tower_kW');
 
 annual_facility_energy_kWh = annual_facility_ts.Data(end);

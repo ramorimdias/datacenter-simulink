@@ -100,6 +100,8 @@ add_line(model, 'Cooling Tower/1', 'Rack CDU and Internal Loop/2', ...
     'autorouting', 'on');
 add_line(model, 'Cooling Tower/1', 'Facility PG25 Loop/2', ...
     'autorouting', 'on');
+add_line(model, 'Aeration Model/11', 'Cooling Tower/5', ...
+    'autorouting', 'on');
 
 % Live internal-loop fluid and aeration signals into the CDU.
 add_line(model, 'Aeration Model/3', 'Rack CDU and Internal Loop/3', ...
@@ -161,10 +163,10 @@ monitor_sources = {
     'IT Racks/1',                            'P_IT_kW';
     'IT Racks/3',                            'facility_U';
     'Rack CDU and Internal Loop/2',          'flow_internal_m3h';
-    'Rack CDU and Internal Loop/3',          'P_internal_pump_kW';
+    'Rack CDU and Internal Loop/3',          'P_internal_loop_pump_kW';
     'Rack CDU and Internal Loop/5',          'T_chip_C';
     'Facility PG25 Loop/2',                  'flow_external_m3h';
-    'Facility PG25 Loop/3',                  'P_external_pump_kW';
+    'Facility PG25 Loop/3',                  'P_external_loop_pump_kW';
     'Cooling Tower/1',                       'T_tower_supply_C';
     'Cooling Tower/2',                       'P_tower_kW';
     'Facility Energy and Cost/1',            'P_facility_kW';
