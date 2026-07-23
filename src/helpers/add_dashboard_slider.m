@@ -10,6 +10,10 @@ function added = add_dashboard_slider(parent_path, slider_name, target_block_nam
     slider_path = [parent_path '/' slider_name];
     target_path = [parent_path '/' target_block_name];
 
+    % Dashboard sliders are optional UI controls. Inputs remain directly
+    % editable in their Constant/Gain block dialogs.
+    return;
+
     try
         % The public library path changed across Simulink releases.
         % Try the current path first, followed by the legacy HMI library.

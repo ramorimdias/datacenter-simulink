@@ -29,25 +29,11 @@ function build_scenario_subsystem(path)
     add_out(path, 'ElectricityPrice', 3, [520 255 550 275]);
     add_out(path, 'OperatingMonths', 4, [520 340 550 360]);
 
-    add_block('simulink/Sinks/Display', [path '/Load Fraction Display'], ...
-        'Position', [385 45 470 80]);
-    add_block('simulink/Sinks/Display', [path '/Wet Bulb Display'], ...
-        'Position', [385 145 470 180]);
-    add_block('simulink/Sinks/Display', [path '/Electricity Price Display'], ...
-        'Position', [385 245 470 280]);
-    add_block('simulink/Sinks/Display', [path '/Operating Months Display'], ...
-        'Position', [385 330 470 365]);
-
     add_line(path, 'IT Load Profile/1', 'Interactive Load Multiplier/1');
     add_line(path, 'Interactive Load Multiplier/1', 'LoadFraction/1');
-    add_line(path, 'Interactive Load Multiplier/1', 'Load Fraction Display/1');
     add_line(path, 'Ambient Wet Bulb C/1', 'AmbientWetBulbC/1');
-    add_line(path, 'Ambient Wet Bulb C/1', 'Wet Bulb Display/1');
     add_line(path, 'Electricity Price per kWh/1', 'ElectricityPrice/1');
-    add_line(path, 'Electricity Price per kWh/1', ...
-        'Electricity Price Display/1');
     add_line(path, 'Operating Months/1', 'OperatingMonths/1');
-    add_line(path, 'Operating Months/1', 'Operating Months Display/1');
 
     add_dashboard_slider(path, 'Tune IT Load Fraction', ...
         'Interactive Load Multiplier', 'Gain', [0 0.1 1.2], ...
