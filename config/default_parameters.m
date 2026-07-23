@@ -94,13 +94,26 @@ air_void_fraction_external = 0.00;
 rho_air_kg_m3 = 1.184;
 cp_air_J_kgK = 1006;
 
-% Empirical calibration inputs, not universal physical constants.
-internal_flow_derating_coefficient = 2.0;
-external_flow_derating_coefficient = 2.0;
+% Pump hydraulic-efficiency correction ratios. These are calibration inputs,
+% not universal physical constants. The clean pump efficiency is applied
+% separately in the hydraulic subsystems.
 internal_efficiency_derating_coefficient = 4.0;
 external_efficiency_derating_coefficient = 4.0;
-minimum_pump_flow_capacity_factor = 0.50;
 minimum_pump_efficiency_fraction = 0.40;
+
+% Optional homogeneous-model correction for additional two-phase losses not
+% captured by mixture density and velocity. Leave at zero until calibrated
+% from component or loop measurements.
+internal_two_phase_dp_coefficient = 0.0;
+external_two_phase_dp_coefficient = 0.0;
+
+% Deprecated compatibility parameters. They are retained so older scripts do
+% not fail, but the live model no longer divides required flow by a pump
+% capacity factor. Pump mixture flow is calculated from liquid flow and void
+% fraction directly.
+internal_flow_derating_coefficient = 2.0;
+external_flow_derating_coefficient = 2.0;
+minimum_pump_flow_capacity_factor = 0.50;
 
 %% Temperature targets and CDU
 internal_target_deltaT_K = design_deltaT_K;
@@ -110,8 +123,14 @@ HX_approach_K = 3;
 %% Reduced-order hydraulic model before Excel-baseline calibration
 internal_reference_pressure_drop_Pa = 120e3;
 internal_pump_efficiency = 0.65;
+internal_motor_efficiency = 0.95;
+internal_vfd_efficiency = 0.97;
+
 external_reference_pressure_drop_Pa = 80e3;
 external_pump_efficiency = 0.70;
+external_motor_efficiency = 0.95;
+external_vfd_efficiency = 0.97;
+
 mu_pressure_exponent = 0.20;
 
 % Average-case piping assumptions for Darcy-Weisbach pressure loss.
@@ -126,6 +145,9 @@ external_pipe_roughness_m = 1.5e-6;
 internal_fittings_loss_coefficient = 20;
 external_fittings_loss_coefficient = 15;
 coldplates_per_U = 3;
+
+% Reference pressure loss for one cold-plate branch at the clean-fluid design
+% branch flow. The live model scales this term with branch mixture flow squared.
 coldplate_pressure_drop_Pa = 30000;
 
 %% Cooling tower / closed-circuit heat-rejection model
