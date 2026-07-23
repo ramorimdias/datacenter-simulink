@@ -1,70 +1,110 @@
 function build_energy_cost_subsystem(path)
+% Facility power, energy, PUE and flat-price projection.
+% Discounted multi-year TCO is handled by the separate TCO subsystem and
+% by run_analysis.m.
     add_in(path, 'ITPower_kW', 1, [25 45 55 65]);
     add_in(path, 'InternalPump_kW', 2, [25 105 55 125]);
     add_in(path, 'ExternalPump_kW', 3, [25 165 55 185]);
     add_in(path, 'TowerPower_kW', 4, [25 225 55 245]);
-    add_in(path, 'ElectricityPrice', 5, [25 355 55 375]);
-    add_in(path, 'OperatingMonths', 6, [25 415 55 435]);
+    add_in(path, 'ElectricityPrice', 5, [25 385 55 405]);
+    add_in(path, 'OperatingMonths', 6, [25 445 55 465]);
 
     add_block('simulink/Sources/Constant', [path '/Facility Aux kW'], ...
         'Value', 'facility_auxiliary_power_kW', ...
-        'Position', [105 275 195 305]);
+        'Position', [105 285 195 315]);
+
+    add_block('simulink/Math Operations/Sum', [path '/Cooling Power kW'], ...
+        'Inputs', '++++', 'Position', [250 145 305 265]);
     add_block('simulink/Math Operations/Sum', [path '/Facility Power kW'], ...
-        'Inputs', '+++++', 'Position', [265 90 320 220]);
+        'Inputs', '++', 'Position', [365 75 420 145]);
 
     add_block('simulink/Sources/Constant', [path '/PUE Epsilon'], ...
-        'Value', '1e-9', 'Position', [370 260 425 290]);
+        'Value', '1e-9', 'Position', [365 265 420 295]);
     add_block('simulink/Math Operations/Sum', [path '/IT plus epsilon'], ...
-        'Inputs', '++', 'Position', [470 210 515 275]);
+        'Inputs', '++', 'Position', [470 215 515 280]);
     add_block('simulink/Math Operations/Product', ...
         [path '/Instantaneous PUE'], 'Inputs', '*/', ...
-        'Position', [570 115 625 175]);
+        'Position', [570 100 625 160]);
 
+    % Simulation energy integrators.
     add_block('simulink/Continuous/Integrator', ...
         [path '/Facility kW seconds'], 'InitialCondition', '0', ...
-        'Position', [380 40 420 80]);
+        'Position', [470 30 510 70]);
     add_block('simulink/Math Operations/Gain', ...
         [path '/Simulation Facility Energy kWh'], 'Gain', '1/3600', ...
-        'Position', [470 35 595 85]);
+        'Position', [560 25 685 75]);
+
     add_block('simulink/Continuous/Integrator', ...
         [path '/IT kW seconds'], 'InitialCondition', '0', ...
-        'Position', [380 320 420 360]);
+        'Position', [470 325 510 365]);
     add_block('simulink/Math Operations/Gain', ...
         [path '/Simulation IT Energy kWh'], 'Gain', '1/3600', ...
-        'Position', [470 315 595 365]);
+        'Position', [560 320 685 370]);
+
+    add_block('simulink/Continuous/Integrator', ...
+        [path '/Cooling kW seconds'], 'InitialCondition', '0', ...
+        'Position', [470 400 510 440]);
+    add_block('simulink/Math Operations/Gain', ...
+        [path '/Simulation Cooling Energy kWh'], 'Gain', '1/3600', ...
+        'Position', [560 395 685 445]);
+
     add_block('simulink/Math Operations/Sum', ...
         [path '/IT Energy plus epsilon'], 'Inputs', '++', ...
-        'Position', [650 300 695 365]);
+        'Position', [735 290 780 355]);
     add_block('simulink/Math Operations/Product', [path '/Period PUE'], ...
-        'Inputs', '*/', 'Position', [750 240 805 300]);
+        'Inputs', '*/', 'Position', [830 225 885 285]);
 
+    % User-selected month projection. The explicit 8760 h/year baseline is
+    % used, not 365.25 calendar days.
     add_block('simulink/Math Operations/Gain', [path '/Operating Hours'], ...
-        'Gain', 'days_per_month*hours_per_day', ...
-        'Position', [110 405 220 445]);
+        'Gain', 'operating_hours_per_year/12', ...
+        'Position', [110 435 235 475]);
     add_block('simulink/Math Operations/Gain', [path '/Projection Factor'], ...
         'Gain', '1/simulation_duration_h', ...
-        'Position', [270 405 370 445]);
-    add_block('simulink/Math Operations/Product', [path '/Projected Energy kWh'], ...
-        'Inputs', '**', 'Position', [650 50 710 110]);
+        'Position', [285 435 385 475]);
+    add_block('simulink/Math Operations/Product', ...
+        [path '/Projected Energy kWh'], 'Inputs', '**', ...
+        'Position', [735 35 795 95]);
     add_block('simulink/Math Operations/Product', [path '/Projected Cost'], ...
-        'Inputs', '**', 'Position', [770 65 830 125]);
+        'Inputs', '**', 'Position', [850 45 910 105]);
     add_block('simulink/Math Operations/Product', ...
         [path '/Average Monthly Cost'], 'Inputs', '*/', ...
-        'Position', [900 85 960 145]);
+        'Position', [960 55 1020 115]);
 
-    add_out(path, 'FacilityPower_kW', 1, [1040 115 1070 135]);
-    add_out(path, 'InstantaneousPUE', 2, [1040 180 1070 200]);
-    add_out(path, 'SimulationEnergy_kWh', 3, [1040 245 1070 265]);
-    add_out(path, 'ProjectedEnergy_kWh', 4, [1040 310 1070 330]);
-    add_out(path, 'ProjectedCost', 5, [1040 375 1070 395]);
-    add_out(path, 'AverageMonthlyCost', 6, [1040 440 1070 460]);
-    add_out(path, 'PeriodPUE', 7, [1040 505 1070 525]);
+    % Annualized energies used by the TCO black box.
+    add_block('simulink/Math Operations/Gain', ...
+        [path '/Annual Facility Energy kWh'], ...
+        'Gain', 'annual_projection_scale_factor', ...
+        'Position', [735 395 870 445]);
+    add_block('simulink/Math Operations/Gain', ...
+        [path '/Annual Cooling Energy kWh'], ...
+        'Gain', 'annual_projection_scale_factor', ...
+        'Position', [735 465 870 515]);
+    add_block('simulink/Math Operations/Gain', ...
+        [path '/Annual IT Energy kWh'], ...
+        'Gain', 'annual_projection_scale_factor', ...
+        'Position', [735 535 870 585]);
+
+    add_out(path, 'FacilityPower_kW', 1, [1110 70 1140 90]);
+    add_out(path, 'InstantaneousPUE', 2, [1110 125 1140 145]);
+    add_out(path, 'SimulationEnergy_kWh', 3, [1110 180 1140 200]);
+    add_out(path, 'ProjectedEnergy_kWh', 4, [1110 235 1140 255]);
+    add_out(path, 'ProjectedCost', 5, [1110 290 1140 310]);
+    add_out(path, 'AverageMonthlyCost', 6, [1110 345 1140 365]);
+    add_out(path, 'PeriodPUE', 7, [1110 400 1140 420]);
+    add_out(path, 'AnnualFacilityEnergy_kWh', 8, [1110 455 1140 475]);
+    add_out(path, 'AnnualCoolingEnergy_kWh', 9, [1110 510 1140 530]);
+    add_out(path, 'CoolingPower_kW', 10, [1110 565 1140 585]);
+    add_out(path, 'AnnualITEnergy_kWh', 11, [1110 620 1140 640]);
+
+    add_line(path, 'InternalPump_kW/1', 'Cooling Power kW/1');
+    add_line(path, 'ExternalPump_kW/1', 'Cooling Power kW/2');
+    add_line(path, 'TowerPower_kW/1', 'Cooling Power kW/3');
+    add_line(path, 'Facility Aux kW/1', 'Cooling Power kW/4');
+    add_line(path, 'Cooling Power kW/1', 'CoolingPower_kW/1');
 
     add_line(path, 'ITPower_kW/1', 'Facility Power kW/1');
-    add_line(path, 'InternalPump_kW/1', 'Facility Power kW/2');
-    add_line(path, 'ExternalPump_kW/1', 'Facility Power kW/3');
-    add_line(path, 'TowerPower_kW/1', 'Facility Power kW/4');
-    add_line(path, 'Facility Aux kW/1', 'Facility Power kW/5');
+    add_line(path, 'Cooling Power kW/1', 'Facility Power kW/2');
     add_line(path, 'Facility Power kW/1', 'FacilityPower_kW/1');
 
     add_line(path, 'ITPower_kW/1', 'IT plus epsilon/1');
@@ -88,6 +128,10 @@ function build_energy_cost_subsystem(path)
     add_line(path, 'IT Energy plus epsilon/1', 'Period PUE/2');
     add_line(path, 'Period PUE/1', 'PeriodPUE/1');
 
+    add_line(path, 'Cooling Power kW/1', 'Cooling kW seconds/1');
+    add_line(path, 'Cooling kW seconds/1', ...
+        'Simulation Cooling Energy kWh/1');
+
     add_line(path, 'OperatingMonths/1', 'Operating Hours/1');
     add_line(path, 'Operating Hours/1', 'Projection Factor/1');
     add_line(path, 'Simulation Facility Energy kWh/1', ...
@@ -101,4 +145,16 @@ function build_energy_cost_subsystem(path)
     add_line(path, 'Projected Cost/1', 'Average Monthly Cost/1');
     add_line(path, 'OperatingMonths/1', 'Average Monthly Cost/2');
     add_line(path, 'Average Monthly Cost/1', 'AverageMonthlyCost/1');
+
+    add_line(path, 'Simulation Facility Energy kWh/1', ...
+        'Annual Facility Energy kWh/1');
+    add_line(path, 'Annual Facility Energy kWh/1', ...
+        'AnnualFacilityEnergy_kWh/1');
+    add_line(path, 'Simulation Cooling Energy kWh/1', ...
+        'Annual Cooling Energy kWh/1');
+    add_line(path, 'Annual Cooling Energy kWh/1', ...
+        'AnnualCoolingEnergy_kWh/1');
+    add_line(path, 'Simulation IT Energy kWh/1', ...
+        'Annual IT Energy kWh/1');
+    add_line(path, 'Annual IT Energy kWh/1', 'AnnualITEnergy_kWh/1');
 end
