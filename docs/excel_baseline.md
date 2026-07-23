@@ -11,7 +11,7 @@ the Simulink and MATLAB TCO model.
 | Design supply-return delta T, 10 C | `design_deltaT_K = 10` |
 | Operating hours/year, 8760 | `operating_hours_per_year = 8760` |
 | Analysis horizon, 10 years | `analysis_horizon_years = 10` |
-| Discount rate, 8% | `discount_rate_annual = 0.08` |
+| Financial discounting | Not applied in the default case (`discount_rate_annual = 0`) |
 | Electricity price Year 1, 0.13/kWh | `electricity_price_year1_per_kWh = 0.13` |
 | Electricity escalation, 3% | `electricity_price_escalation_annual = 0.03` |
 | General escalation, 2% | `fluid_general_cost_escalation_annual = 0.02` |
@@ -57,7 +57,7 @@ Annual make-up and maintenance are also charged in replacement years.
 - Fluid, make-up, maintenance, replacement, and disposal costs escalate by 2%.
 - Operating cash flows are treated as end-of-year costs.
 - Initial equipment and fluid-fill CAPEX is a Year 0 cost.
-- Discounted TCO is the sum of Year 0 CAPEX and discounted annual cash flows.
+- TCO is reported nominally as the sum of Year 0 CAPEX and escalated annual cash flows.
 
 ## TCO boundaries
 

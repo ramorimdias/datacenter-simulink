@@ -1,5 +1,6 @@
 function build_tco_subsystem(path)
-% Discounted TCO black box for the configured analysis horizon.
+% TCO black box for the configured analysis horizon. The default case uses
+% nominal cash flows (discount_rate_annual = 0).
 %
 % Two TCO boundaries are reported:
 % 1. Facility TCO includes all facility electricity, including IT power.

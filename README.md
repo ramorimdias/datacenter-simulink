@@ -101,7 +101,7 @@ assumption was supplied:
 - 10 K supply-return design temperature difference
 - 8760 operating hours per year
 - 10-year analysis horizon
-- 8% annual discount rate
+- no financial discounting in the default case
 - 0.13 currency units/kWh in Year 1
 - 3% annual electricity-price escalation
 - 2% annual fluid and general-cost escalation
@@ -150,7 +150,7 @@ data.
   spray-pump power, and capacity margin.
 - **Facility Energy and Cost**: facility and cooling power, instantaneous and
   period PUE, annual facility energy, and annual cooling energy.
-- **TCO Financial Model**: initial cooling CAPEX, nominal TCO, discounted TCO,
+- **TCO Financial Model**: initial cooling CAPEX and nominal TCO,
   electricity cost, and non-energy OPEX over the configured horizon.
 
 ## Build the visual model
@@ -194,7 +194,7 @@ This command:
 1. builds the Simulink model;
 2. runs the representative simulation with the configured default parameters;
 3. annualizes facility and cooling energy using exactly 8760 h/year;
-4. calculates annual nominal and discounted cash flows;
+4. calculates annual nominal cash flows;
 5. applies electricity and general-cost escalation;
 6. schedules make-up, maintenance, full fluid replacement, and disposal;
 7. reports configurable milestones such as Year 5 and Year 10;
