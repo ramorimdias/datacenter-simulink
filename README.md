@@ -7,25 +7,90 @@ composed of functional black-box subsystems.
 ## Top-level architecture
 
 ```text
-Operating Scenario
-        |
-        v
-     IT Racks
-        |
-        v
-Rack CDU + Internal Loop
-        |
-        v
- Facility PG25 Loop
-        |
-        v
-   Cooling Tower
+Operating Scenario ---> IT Racks ------------------------------+
+                                                               |
+Fluid Properties ---> Aeration Model ---> Rack CDU/Internal ---+-->
+                                         Loop                       Facility
+                                                                    PG25 Loop
+                                                                        |
+                                                                        v
+                                                                  Cooling Tower
 
 Electrical loads -> Facility Energy and Cost -> TCO Financial Model
 ```
 
 Double-click any subsystem in the generated Simulink model to inspect its
-internal correlations.
+internal correlations, live controls, and numeric displays.
+
+## Interactive controls
+
+The generated model contains Dashboard Slider controls inside:
+
+- **Operating Scenario**: IT-load multiplier and ambient wet-bulb temperature.
+- **Fluid Properties**: internal and external specific heat, density, dynamic
+  viscosity, and thermal conductivity.
+- **Aeration Model**: internal and external free-gas volume fractions.
+
+The sliders tune the connected block parameters during a normal-mode
+simulation. Rebuilding the model restores the defaults from
+`config/default_parameters.m`.
+
+For interactive tuning, run the model from the Simulink editor. A one-hour
+representative simulation can finish too quickly for manual tuning, so use
+simulation pacing, pause the simulation, or increase `simulation_time_s` when
+exploring controls.
+
+The standard Simulink Display blocks inside the subsystems and on the top-level
+canvas show actual numeric signal values during the run and retain the final
+value when the simulation stops. All principal signals are also exported as
+`Timeseries` variables through To Workspace blocks.
+
+## Fluid Properties block
+
+The block outputs clean-liquid properties as explicit signals for both loops:
+
+```text
+Cp                 J/kg/K
+Density            kg/m3
+Dynamic viscosity  Pa.s
+Conductivity       W/m/K
+```
+
+The dashboard viscosity input is shown in cP for convenience and converted to
+Pa.s before leaving the block.
+
+Property effects in the current reduced-order model:
+
+- `Cp x density` controls required volumetric flow for the selected delta T.
+- density and viscosity affect the pressure-drop and pump-power correlation.
+- internal-loop thermal conductivity modifies the fluid-side fraction of the
+  chip-to-coolant thermal resistance.
+- external-loop conductivity is exposed for monitoring and future
+  heat-exchanger/tower correlations but is not yet used independently.
+
+## Aeration Model block
+
+`air_void_fraction_internal` and `air_void_fraction_external` represent
+entrained free-gas volume fraction, not dissolved gas. The block calculates:
+
+- effective volumetric heat capacity;
+- effective mixture density;
+- pump flow-capacity derating;
+- pump-efficiency derating;
+- effective chip-to-coolant thermal resistance.
+
+The clean-liquid thermal resistance is split conceptually into a solid-side and
+fluid-side fraction. Only the configured fluid-side fraction scales with
+conductivity:
+
+```text
+Rth_clean = Rth_reference x [(1-f_fluid) + f_fluid x k_reference/k]
+Rth_effective = Rth_clean x (1 + C_aeration x alpha)
+```
+
+The derating coefficients are calibration parameters, not universal physical
+constants. They should later be replaced with measured pump and cold-plate
+maps.
 
 ## Excel baseline currently implemented
 
@@ -69,14 +134,18 @@ data.
 
 ## Current subsystems
 
-- **Operating Scenario**: IT load profile, ambient wet-bulb temperature,
-  electricity price, and operating period.
+- **Operating Scenario**: IT load, ambient wet-bulb temperature, electricity
+  price, operating period, and live scenario controls.
+- **Fluid Properties**: separate internal/external fluid properties, sliders,
+  unit conversion, and live displays.
+- **Aeration Model**: free-gas controls, mixture properties, pump derating, and
+  thermal-resistance adjustment.
 - **IT Racks**: equivalent 48U rack population, IT power, and liquid heat
   capture.
-- **Rack CDU and Internal Loop**: internal flow, aeration derating, pressure
-  drop, pump power, CDU approach, and chip-temperature estimate.
+- **Rack CDU and Internal Loop**: internal flow, pressure drop, pump power, CDU
+  approach, and chip-temperature estimate using live upstream signals.
 - **Facility PG25 Loop**: external flow, pressure drop, pump power, and return
-  temperature.
+  temperature using live upstream signals.
 - **Cooling Tower**: supply temperature, load and flow corrections, fan power,
   spray-pump power, and capacity margin.
 - **Facility Energy and Cost**: facility and cooling power, instantaneous and
@@ -92,24 +161,29 @@ data.
 4. Run:
 
 ```matlab
+clear functions
+rehash
 build_model
 ```
 
 This creates the model named by the `model` variable, currently:
 
 ```text
-DataCenter_D2C_TCO_v4.slx
+DataCenter_D2C_Interactive_TCO_v5.slx
 ```
 
 Run the generated model:
 
 ```matlab
-simOut = sim('DataCenter_D2C_TCO_v4');
+simOut = sim('DataCenter_D2C_Interactive_TCO_v5');
 ```
+
+For live tuning, open the generated model, double-click the required subsystem,
+and run from the Simulink editor.
 
 ## Run the complete TCO analysis
 
-The recommended workflow is:
+The recommended reproducible financial workflow is:
 
 ```matlab
 results = run_analysis;
@@ -118,13 +192,17 @@ results = run_analysis;
 This command:
 
 1. builds the Simulink model;
-2. runs the representative simulation;
+2. runs the representative simulation with the configured default parameters;
 3. annualizes facility and cooling energy using exactly 8760 h/year;
 4. calculates annual nominal and discounted cash flows;
 5. applies electricity and general-cost escalation;
 6. schedules make-up, maintenance, full fluid replacement, and disposal;
 7. reports configurable milestones such as Year 5 and Year 10;
 8. exports CSV and MAT results.
+
+Dashboard changes made manually during a prior interactive run are not treated
+as persistent TCO assumptions. To make a case reproducible, write the selected
+values into `config/default_parameters.m` before running `run_analysis`.
 
 Generated result files:
 
@@ -159,20 +237,6 @@ The current CAPEX boundary includes CDU and pump equipment plus the initial
 fluid fill. Tower CAPEX, building CAPEX, IT equipment, financing, taxes, water
 consumption, and residual value are not yet included because no assumptions
 were supplied for them.
-
-## Aeration model
-
-`air_void_fraction_internal` and `air_void_fraction_external` represent
-entrained free-gas volume fraction, not dissolved gas. Aeration currently:
-
-- lowers effective volumetric heat capacity;
-- increases delivered flow required for the same heat and temperature rise;
-- derates pump flow capacity;
-- derates pump efficiency;
-- increases effective chip-to-coolant thermal resistance.
-
-The derating coefficients are calibration parameters and should later be
-replaced with measured pump and cold-plate data.
 
 ## Model fidelity
 
