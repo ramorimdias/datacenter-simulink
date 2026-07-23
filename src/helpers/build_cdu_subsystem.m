@@ -29,8 +29,8 @@ function build_cdu_subsystem(path)
         'Inputs', '7', 'Position', [105 145 125 385]);
     add_block('simulink/Signal Routing/Mux', [path '/Pressure Drop Inputs'], ...
         'Inputs', '10', 'Position', [105 430 125 700]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Length m'], 'Value', ...
-        'internal_pipe_length_m', 'Position', [175 430 275 455]);
+    add_block('simulink/Sources/Constant', [path '/Fixed Pipe Length m'], 'Value', ...
+        'internal_fixed_pipe_length_m', 'Position', [175 430 275 455]);
     add_block('simulink/Sources/Constant', [path '/Pipe Diameter m'], 'Value', ...
         'internal_pipe_diameter_m', 'Position', [175 465 275 490]);
     add_block('simulink/Sources/Constant', [path '/Pipe Roughness m'], 'Value', ...
@@ -113,7 +113,7 @@ function build_cdu_subsystem(path)
     add_line(path, 'InternalDensity_kg_m3/1', 'Pressure Drop Inputs/3');
     add_line(path, 'InternalViscosity_Pa_s/1', 'Pressure Drop Inputs/4');
     add_line(path, 'FlowCapacityFactor/1', 'Pressure Drop Inputs/5');
-    add_line(path, 'Pipe Length m/1', 'Pressure Drop Inputs/6');
+    add_line(path, 'Fixed Pipe Length m/1', 'Pressure Drop Inputs/6');
     add_line(path, 'Pipe Diameter m/1', 'Pressure Drop Inputs/7');
     add_line(path, 'Pipe Roughness m/1', 'Pressure Drop Inputs/8');
     add_line(path, 'Fittings K/1', 'Pressure Drop Inputs/9');

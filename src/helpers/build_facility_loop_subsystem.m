@@ -11,6 +11,7 @@ function build_facility_loop_subsystem(path)
     add_in(path, 'ExternalViscosity_Pa_s', 5, [25 265 55 285]);
     add_in(path, 'FlowCapacityFactor', 6, [25 315 55 335]);
     add_in(path, 'EfficiencyFactor', 7, [25 365 55 385]);
+    add_in(path, 'FacilityU', 8, [25 415 55 435]);
 
     add_block('simulink/Signal Routing/Mux', [path '/Flow Inputs'], ...
         'Inputs', '2', 'Position', [105 45 125 115]);
@@ -25,7 +26,12 @@ function build_facility_loop_subsystem(path)
         'Inputs', '7', 'Position', [105 145 125 385]);
     add_block('simulink/Signal Routing/Mux', [path '/Pressure Drop Inputs'], ...
         'Inputs', '9', 'Position', [105 410 125 650]);
-    add_block('simulink/Sources/Constant', [path '/Pipe Length m'], 'Value', 'external_pipe_length_m', 'Position', [175 410 275 435]);
+    add_block('simulink/Sources/Constant', [path '/Fixed Pipe Length m'], 'Value', 'external_fixed_pipe_length_m', 'Position', [175 410 275 435]);
+    add_block('simulink/Sources/Constant', [path '/U per Rack'], 'Value', 'rack_U', 'Position', [175 445 275 470]);
+    add_block('simulink/Sources/Constant', [path '/Additional Length per Rack m'], 'Value', 'additional_external_pipe_length_per_rack_m', 'Position', [175 480 275 505]);
+    add_block('simulink/Math Operations/Product', [path '/Equivalent Rack Count'], 'Inputs', '*/', 'Position', [320 410 375 450]);
+    add_block('simulink/Math Operations/Product', [path '/Additional Rack Length'], 'Inputs', '**', 'Position', [410 410 480 450]);
+    add_block('simulink/Math Operations/Sum', [path '/Total External Pipe Length m'], 'Inputs', '++', 'Position', [515 410 570 455]);
     add_block('simulink/Sources/Constant', [path '/Pipe Diameter m'], 'Value', 'external_pipe_diameter_m', 'Position', [175 445 275 470]);
     add_block('simulink/Sources/Constant', [path '/Pipe Roughness m'], 'Value', 'external_pipe_roughness_m', 'Position', [175 480 275 505]);
     add_block('simulink/Sources/Constant', [path '/Fittings K'], 'Value', 'external_fittings_loss_coefficient', 'Position', [175 515 275 540]);
@@ -93,7 +99,13 @@ function build_facility_loop_subsystem(path)
     add_line(path, 'ExternalDensity_kg_m3/1', 'Pressure Drop Inputs/3');
     add_line(path, 'ExternalViscosity_Pa_s/1', 'Pressure Drop Inputs/4');
     add_line(path, 'FlowCapacityFactor/1', 'Pressure Drop Inputs/5');
-    add_line(path, 'Pipe Length m/1', 'Pressure Drop Inputs/6');
+    add_line(path, 'Fixed Pipe Length m/1', 'Total External Pipe Length m/1');
+    add_line(path, 'FacilityU/1', 'Equivalent Rack Count/1');
+    add_line(path, 'U per Rack/1', 'Equivalent Rack Count/2');
+    add_line(path, 'Equivalent Rack Count/1', 'Additional Rack Length/1');
+    add_line(path, 'Additional Length per Rack m/1', 'Additional Rack Length/2');
+    add_line(path, 'Additional Rack Length/1', 'Total External Pipe Length m/2');
+    add_line(path, 'Total External Pipe Length m/1', 'Pressure Drop Inputs/6');
     add_line(path, 'Pipe Diameter m/1', 'Pressure Drop Inputs/7');
     add_line(path, 'Pipe Roughness m/1', 'Pressure Drop Inputs/8');
     add_line(path, 'Fittings K/1', 'Pressure Drop Inputs/9');
