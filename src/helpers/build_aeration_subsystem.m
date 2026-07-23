@@ -124,7 +124,7 @@ function build_aeration_subsystem(path)
 
     % Internal signal routing.
     add_line(path, 'Internal Air Volume Fraction/1', 'Internal RhoCp Inputs/1');
-    add_line(path, 'Internal Density kg_m3/1', 'Internal RhoCp Inputs/2');
+    add_line(path, 'InternalDensity_kg_m3/1', 'Internal RhoCp Inputs/2');
     add_line(path, 'InternalCp_J_kgK/1', 'Internal RhoCp Inputs/3');
     add_line(path, 'Internal RhoCp Inputs/1', 'Internal Effective RhoCp/1');
 
