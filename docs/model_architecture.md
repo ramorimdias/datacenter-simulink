@@ -162,10 +162,7 @@ Inputs:
 Outputs:
 
 - initial cooling CAPEX
-- nominal and discounted facility TCO
-- nominal and discounted cooling TCO
-- discounted facility and cooling electricity costs
-- discounted non-energy OPEX
+- nominal facility and cooling TCO
 
 ## Interactive operation
 

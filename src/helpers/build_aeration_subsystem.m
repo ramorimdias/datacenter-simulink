@@ -112,26 +112,6 @@ function build_aeration_subsystem(path)
     add_out(path, 'ExternalFlowCapacityFactor', 10, [980 480 1010 500]);
     add_out(path, 'ExternalEfficiencyFactor', 11, [980 525 1010 545]);
 
-    % Live and final-value displays.
-    display_specs = {
-        'Internal Air Display',       [815 25 920 55];
-        'External Air Display',       [815 70 920 100];
-        'Internal RhoCp Display',     [815 115 920 145];
-        'Internal Density Display',   [815 160 920 190];
-        'Internal Flow Factor Display',[815 205 920 235];
-        'Internal Efficiency Display',[815 250 920 280];
-        'Effective Rth Display',      [815 295 920 325];
-        'External RhoCp Display',     [815 385 920 415];
-        'External Density Display',   [815 430 920 460];
-        'External Flow Factor Display',[815 475 920 505];
-        'External Efficiency Display',[815 520 920 550]
-    };
-    for idx = 1:size(display_specs,1)
-        add_block('simulink/Sinks/Display', ...
-            [path '/' display_specs{idx,1}], ...
-            'Position', display_specs{idx,2});
-    end
-
     % Internal signal routing.
     add_line(path, 'Internal Air Volume Fraction/1', 'Internal RhoCp Inputs/1');
     add_line(path, 'CleanInternalDensity_kg_m3/1', 'Internal RhoCp Inputs/2');
@@ -204,5 +184,4 @@ end
 
 function connect_output(path, source_block, output_block, display_block)
     add_line(path, [source_block '/1'], [output_block '/1']);
-    add_line(path, [source_block '/1'], [display_block '/1']);
 end

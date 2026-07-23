@@ -54,47 +54,20 @@ function build_fluid_properties_subsystem(path)
     add_out(path, 'ExternalViscosity_Pa_s', 7, [720 470 750 490]);
     add_out(path, 'ExternalConductivity_W_mK', 8, [720 525 750 545]);
 
-    % Numeric displays remain visible after the simulation stops.
-    display_specs = {
-        'Internal Cp Display',             [500 40 640 75];
-        'Internal Density Display',        [500 95 640 130];
-        'Internal Viscosity Display',      [500 150 640 185];
-        'Internal Conductivity Display',   [500 205 640 240];
-        'External Cp Display',             [500 350 640 385];
-        'External Density Display',        [500 405 640 440];
-        'External Viscosity Display',      [500 460 640 495];
-        'External Conductivity Display',   [500 515 640 550]
-    };
-    for idx = 1:size(display_specs,1)
-        add_block('simulink/Sinks/Display', ...
-            [path '/' display_specs{idx,1}], ...
-            'Position', display_specs{idx,2});
-    end
-
     % Signal routing.
     add_line(path, 'Internal Cp J_kgK/1', 'InternalCp_J_kgK/1');
-    add_line(path, 'Internal Cp J_kgK/1', 'Internal Cp Display/1');
     add_line(path, 'Internal Density kg_m3/1', 'InternalDensity_kg_m3/1');
-    add_line(path, 'Internal Density kg_m3/1', 'Internal Density Display/1');
     add_line(path, 'Internal Viscosity cP/1', 'Internal cP to Pa_s/1');
     add_line(path, 'Internal cP to Pa_s/1', 'InternalViscosity_Pa_s/1');
-    add_line(path, 'Internal cP to Pa_s/1', 'Internal Viscosity Display/1');
     add_line(path, 'Internal Conductivity W_mK/1', ...
         'InternalConductivity_W_mK/1');
-    add_line(path, 'Internal Conductivity W_mK/1', ...
-        'Internal Conductivity Display/1');
 
     add_line(path, 'External Cp J_kgK/1', 'ExternalCp_J_kgK/1');
-    add_line(path, 'External Cp J_kgK/1', 'External Cp Display/1');
     add_line(path, 'External Density kg_m3/1', 'ExternalDensity_kg_m3/1');
-    add_line(path, 'External Density kg_m3/1', 'External Density Display/1');
     add_line(path, 'External Viscosity cP/1', 'External cP to Pa_s/1');
     add_line(path, 'External cP to Pa_s/1', 'ExternalViscosity_Pa_s/1');
-    add_line(path, 'External cP to Pa_s/1', 'External Viscosity Display/1');
     add_line(path, 'External Conductivity W_mK/1', ...
         'ExternalConductivity_W_mK/1');
-    add_line(path, 'External Conductivity W_mK/1', ...
-        'External Conductivity Display/1');
 
     % Interactive controls. Limits are deliberately broad engineering ranges.
     add_dashboard_slider(path, 'Tune Internal Cp', ...
@@ -117,6 +90,6 @@ function build_fluid_properties_subsystem(path)
 
     Simulink.Annotation(path, sprintf([ ...
         'FLUID PROPERTIES\n' ...
-        'Dashboard sliders are tunable during normal-mode simulation.\n' ...
-        'Viscosity input is cP; the output signal is Pa.s.']));
+        'Edit the Constant blocks directly. Viscosity input is cP; ' ...
+        'the output signal is Pa.s.']));
 end

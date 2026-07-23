@@ -101,7 +101,6 @@ assumption was supplied:
 - 10 K supply-return design temperature difference
 - 8760 operating hours per year
 - 10-year analysis horizon
-- no financial discounting in the default case
 - 0.13 currency units/kWh in Year 1
 - 3% annual electricity-price escalation
 - 2% annual fluid and general-cost escalation

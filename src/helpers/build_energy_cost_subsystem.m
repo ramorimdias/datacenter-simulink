@@ -1,6 +1,6 @@
 function build_energy_cost_subsystem(path)
 % Facility power, energy, PUE and flat-price projection.
-% Discounted multi-year TCO is handled by the separate TCO subsystem and
+% Multi-year nominal TCO is handled by the separate TCO subsystem and
 % by run_analysis.m.
     add_in(path, 'ITPower_kW', 1, [25 45 55 65]);
     add_in(path, 'InternalPump_kW', 2, [25 105 55 125]);

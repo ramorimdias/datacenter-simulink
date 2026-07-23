@@ -26,9 +26,6 @@ design_deltaT_K = 10.00;
 operating_hours_per_year = 8760;
 analysis_horizon_years = 10;
 tco_reporting_years = [5 10];
-% No financial discounting is applied in the default case. This legacy
-% variable remains at zero for compatibility with older result scripts.
-discount_rate_annual = 0.00;
 electricity_price_year1_per_kWh = 0.13;
 electricity_price_escalation_annual = 0.03;
 fluid_general_cost_escalation_annual = 0.02;

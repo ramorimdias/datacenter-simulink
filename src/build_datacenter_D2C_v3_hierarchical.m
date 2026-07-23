@@ -157,25 +157,6 @@ add_line(model, 'Facility Energy and Cost/9', 'TCO Financial Model/2', ...
 
 %% 4. TOP-LEVEL MONITORING
 monitor_sources = {
-    'Fluid Properties/1',                    'fluid_internal_cp_J_kgK';
-    'Fluid Properties/2',                    'fluid_internal_density_kg_m3';
-    'Fluid Properties/3',                    'fluid_internal_viscosity_Pa_s';
-    'Fluid Properties/4',                    'fluid_internal_conductivity_W_mK';
-    'Fluid Properties/5',                    'fluid_external_cp_J_kgK';
-    'Fluid Properties/6',                    'fluid_external_density_kg_m3';
-    'Fluid Properties/7',                    'fluid_external_viscosity_Pa_s';
-    'Fluid Properties/8',                    'fluid_external_conductivity_W_mK';
-    'Aeration Model/1',                      'air_fraction_internal';
-    'Aeration Model/2',                      'air_fraction_external';
-    'Aeration Model/3',                      'rhoCp_internal_effective_J_m3K';
-    'Aeration Model/4',                      'rho_internal_effective_kg_m3';
-    'Aeration Model/5',                      'internal_pump_flow_capacity_factor_signal';
-    'Aeration Model/6',                      'internal_pump_efficiency_factor_signal';
-    'Aeration Model/7',                      'Rth_effective_K_W_signal';
-    'Aeration Model/8',                      'rhoCp_external_effective_J_m3K';
-    'Aeration Model/9',                      'rho_external_effective_kg_m3';
-    'Aeration Model/10',                     'external_pump_flow_capacity_factor_signal';
-    'Aeration Model/11',                     'external_pump_efficiency_factor_signal';
     'IT Racks/1',                            'P_IT_kW';
     'Rack CDU and Internal Loop/2',          'flow_internal_m3h';
     'Rack CDU and Internal Loop/3',          'P_internal_pump_kW';
@@ -184,17 +165,14 @@ monitor_sources = {
     'Facility PG25 Loop/3',                  'P_external_pump_kW';
     'Cooling Tower/1',                       'T_tower_supply_C';
     'Cooling Tower/2',                       'P_tower_kW';
-    'Cooling Tower/5',                       'tower_capacity_margin_kW';
     'Facility Energy and Cost/1',            'P_facility_kW';
-    'Facility Energy and Cost/2',            'PUE_instantaneous';
-    'Facility Energy and Cost/3',            'E_simulation_kWh';
     'Facility Energy and Cost/7',            'PUE_period';
     'Facility Energy and Cost/8',            'E_annual_facility_kWh';
     'Facility Energy and Cost/9',            'E_annual_cooling_kWh';
     'Facility Energy and Cost/10',           'P_cooling_kW';
     'TCO Financial Model/1',                 'CAPEX_initial_cooling';
-    'TCO Financial Model/4',                 'TCO_nominal_facility';
-    'TCO Financial Model/5',                 'TCO_nominal_cooling'
+    'TCO Financial Model/2',                 'TCO_nominal_facility';
+    'TCO Financial Model/3',                 'TCO_nominal_cooling'
 };
 
 xout = 1980;
@@ -212,18 +190,11 @@ end
 % Numeric displays show actual values during simulation and preserve the final
 % value when the run finishes. The labels identify the quantity and unit.
 display_defs = {
-    'Fluid Properties/1',             'Internal Cp (J per kg K)',       [35 370 285 405];
-    'Fluid Properties/3',             'Internal viscosity (Pa s)',     [35 420 285 455];
-    'Fluid Properties/5',             'External Cp (J per kg K)',       [35 470 285 505];
-    'Fluid Properties/7',             'External viscosity (Pa s)',     [35 520 285 555];
-    'Aeration Model/1',               'Internal air fraction (percent)', [325 370 540 405];
-    'Aeration Model/2',               'External air fraction (percent)', [325 420 540 455];
-    'Aeration Model/7',               'Effective Rth (K per W)',        [325 470 540 505];
     'Rack CDU and Internal Loop/5',   'Estimated chip temperature (C)', [325 520 540 555];
     'Facility Energy and Cost/1',     'Facility power (kW)',            [35 590 285 625];
     'Facility Energy and Cost/7',     'Period PUE (x)',                  [325 590 540 625];
     'Facility Energy and Cost/9',     'Annual cooling energy (kWh)',    [35 640 285 675];
-    'TCO Financial Model/5',          'Nominal cooling TCO (currency)', [325 640 540 675]
+    'TCO Financial Model/3',          'Nominal cooling TCO (currency)', [325 640 540 675]
 };
 for idx = 1:size(display_defs,1)
     add_block('simulink/Sinks/Display', [model '/' display_defs{idx,2}], ...
@@ -247,25 +218,6 @@ end
 % Whole-model visual convention: editable parameter sources are orange and
 % monitored/result sinks are red. This makes the user-facing data flow clear
 % even when the parameters live inside a subsystem.
-input_blocks = find_system(model, 'LookUnderMasks', 'all', ...
-    'FollowLinks', 'on', 'BlockType', 'Constant');
-for idx = 1:numel(input_blocks)
-    try
-        set_param(input_blocks{idx}, 'BackgroundColor', '[1 0.85 0.55]');
-    catch
-    end
-end
-output_blocks = [
-    find_system(model, 'LookUnderMasks', 'all', 'FollowLinks', 'on', ...
-        'BlockType', 'ToWorkspace');
-    find_system(model, 'LookUnderMasks', 'all', 'FollowLinks', 'on', ...
-        'BlockType', 'Display')];
-for idx = 1:numel(output_blocks)
-    try
-        set_param(output_blocks{idx}, 'BackgroundColor', '[1 0.65 0.65]');
-    catch
-    end
-end
 
 % Viscosity is a small quantity in Pa.s, so retain enough precision to make
 % values such as 0.00250 visible instead of rounding them to 0.00.

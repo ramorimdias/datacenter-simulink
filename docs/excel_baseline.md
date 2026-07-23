@@ -11,7 +11,6 @@ the Simulink and MATLAB TCO model.
 | Design supply-return delta T, 10 C | `design_deltaT_K = 10` |
 | Operating hours/year, 8760 | `operating_hours_per_year = 8760` |
 | Analysis horizon, 10 years | `analysis_horizon_years = 10` |
-| Financial discounting | Not applied in the default case (`discount_rate_annual = 0`) |
 | Electricity price Year 1, 0.13/kWh | `electricity_price_year1_per_kWh = 0.13` |
 | Electricity escalation, 3% | `electricity_price_escalation_annual = 0.03` |
 | General escalation, 2% | `fluid_general_cost_escalation_annual = 0.02` |
@@ -51,7 +50,7 @@ Full fluid replacement is charged at the end of Years 4, 8, 12, and so on.
 For a 10-year horizon, replacement and disposal occur in Years 4 and 8.
 Annual make-up and maintenance are also charged in replacement years.
 
-## Escalation and discount convention
+## Escalation convention
 
 - Electricity price escalates by 3% at the start of each operating year.
 - Fluid, make-up, maintenance, replacement, and disposal costs escalate by 2%.

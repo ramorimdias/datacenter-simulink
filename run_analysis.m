@@ -42,7 +42,6 @@ annual_cooling_energy_kWh = annual_cooling_ts.Data(end);
 p = struct();
 p.analysis_horizon_years = analysis_horizon_years;
 p.tco_reporting_years = tco_reporting_years;
-p.discount_rate_annual = discount_rate_annual;
 p.electricity_price_year1_per_kWh = ...
     electricity_price_year1_per_kWh;
 p.electricity_price_escalation_annual = ...
