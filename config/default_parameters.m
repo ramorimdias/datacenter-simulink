@@ -41,8 +41,8 @@ baseline_CDU_pump_CAPEX_per_kW_IT = 150.00;
 baseline_pump_power_fraction_of_IT = 0.012;
 
 % When true, the detailed hydraulic correlations are scaled so that total
-% internal plus external pump power at the design point matches the Excel
-% PG25 baseline: water pump power x PG25 multiplier.
+% internal plus external pump power at the clean-fluid design point matches
+% the Excel PG25 baseline: water pump power x PG25 multiplier.
 use_excel_pump_power_calibration = true;
 
 %% PG25 fluid properties and commercial assumptions
@@ -76,8 +76,10 @@ Rth_chip_to_coolant_K_W = 0.020;
 Rth_aeration_sensitivity = 4.0;
 
 %% Entrained free-gas model
-% Volume fractions from 0 to 1. These describe free gas, not dissolved air.
-air_void_fraction_internal = 0.02;
+% The Excel baseline is deaerated. Change either value, for example to 0.02
+% for 2 vol.% free gas, to quantify aeration penalties. These variables do
+% not represent dissolved gas.
+air_void_fraction_internal = 0.00;
 air_void_fraction_external = 0.00;
 rho_air_kg_m3 = 1.184;
 cp_air_J_kgK = 1006;
