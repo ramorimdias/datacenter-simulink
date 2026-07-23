@@ -1,0 +1,13 @@
+# Generated Simulink models
+*.slx
+*.slxc
+slprj/
+
+# MATLAB autosave and temporary files
+*.asv
+*.m~
+*.autosave
+
+# OS files
+.DS_Store
+Thumbs.db
