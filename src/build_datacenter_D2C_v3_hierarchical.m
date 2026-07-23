@@ -193,13 +193,8 @@ monitor_sources = {
     'Facility Energy and Cost/9',            'E_annual_cooling_kWh';
     'Facility Energy and Cost/10',           'P_cooling_kW';
     'TCO Financial Model/1',                 'CAPEX_initial_cooling';
-    'TCO Financial Model/2',                 'TCO_discounted_facility';
-    'TCO Financial Model/3',                 'TCO_discounted_cooling';
     'TCO Financial Model/4',                 'TCO_nominal_facility';
-    'TCO Financial Model/5',                 'TCO_nominal_cooling';
-    'TCO Financial Model/6',                 'cost_discounted_facility_electricity';
-    'TCO Financial Model/7',                 'cost_discounted_cooling_electricity';
-    'TCO Financial Model/8',                 'cost_discounted_nonenergy_opex'
+    'TCO Financial Model/5',                 'TCO_nominal_cooling'
 };
 
 xout = 1980;
