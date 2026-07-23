@@ -6,7 +6,6 @@
 % Top-level organs:
 %   Inputs (Operating Scenario, Fluid Properties, Facility/Hydraulic Hypotheses)
 %   Aeration Model
-%   IT Racks
 %   Rack CDU and Internal Loop
 %   Facility PG25 Loop
 %   Cooling Tower
@@ -45,16 +44,15 @@ set_param(model, ...
 % physical information flow remains readable from left to right.
 pos.inputs   = [35 40 700 700];
 pos.aeration = [550 40 810 310];
-pos.racks    = [860 95 1030 235];
 pos.cdu      = [1080 40 1320 310];
 pos.loop     = [1370 40 1590 310];
 pos.tower    = [1640 40 1860 310];
 pos.energy   = [850 390 1100 635];
 pos.tco      = [1170 390 1420 635];
+pos.outputs  = [35 760 720 1135];
 
 add_subsystem(model, 'Inputs', pos.inputs, 'orange');
 add_subsystem(model, 'Aeration Model', pos.aeration, 'gray');
-add_subsystem(model, 'IT Racks', pos.racks, 'lightGreen');
 add_subsystem(model, 'Rack CDU and Internal Loop', pos.cdu, 'yellow');
 add_subsystem(model, 'Facility PG25 Loop', pos.loop, 'orange');
 add_subsystem(model, 'Cooling Tower', pos.tower, 'cyan');
@@ -63,27 +61,26 @@ add_subsystem(model, 'TCO Financial Model', pos.tco, 'gray');
 
 build_inputs_subsystem([model '/Inputs']);
 build_aeration_subsystem([model '/Aeration Model']);
-build_it_racks_subsystem([model '/IT Racks']);
 build_cdu_subsystem([model '/Rack CDU and Internal Loop']);
 build_facility_loop_subsystem([model '/Facility PG25 Loop']);
 build_tower_subsystem([model '/Cooling Tower']);
 build_energy_cost_subsystem([model '/Facility Energy and Cost']);
 build_tco_subsystem([model '/TCO Financial Model']);
+add_subsystem(model, 'Outputs', pos.outputs, 'red');
+build_outputs_subsystem([model '/Outputs']);
 % Simscape integration is intentionally disabled for this native reduced-order
 % model.  The hydraulic equations are implemented explicitly in the two loop
 % subsystems below.
 
 %% 3. TOP-LEVEL CONNECTIONS
 % Centralized inputs to racks, tower, and energy accounting.
-add_line(model, 'Inputs/1', 'IT Racks/1', 'autorouting', 'on');
+% IT load and rack sizing is nested inside Inputs.
 add_line(model, 'Inputs/2', 'Cooling Tower/4', ...
     'autorouting', 'on');
 add_line(model, 'Inputs/3', 'Facility Energy and Cost/5', ...
     'autorouting', 'on');
 add_line(model, 'Inputs/4', 'Facility Energy and Cost/6', ...
     'autorouting', 'on');
-add_line(model, 'Inputs/13', 'IT Racks/2', 'autorouting', 'on');
-add_line(model, 'Inputs/14', 'IT Racks/3', 'autorouting', 'on');
 % Centralized hydraulic hypotheses.
 for i = 1:6
     add_line(model, ['Inputs/' num2str(14+i)], ...
@@ -102,9 +99,9 @@ add_line(model, 'Inputs/9', 'Aeration Model/4', 'autorouting', 'on');
 add_line(model, 'Inputs/10', 'Aeration Model/5', 'autorouting', 'on');
 
 % IT racks to CDU.
-add_line(model, 'IT Racks/2', 'Rack CDU and Internal Loop/1', ...
+add_line(model, 'Inputs/28', 'Rack CDU and Internal Loop/1', ...
     'autorouting', 'on');
-add_line(model, 'IT Racks/3', 'Rack CDU and Internal Loop/9', ...
+add_line(model, 'Inputs/29', 'Rack CDU and Internal Loop/9', ...
     'autorouting', 'on');
 
 % Cooling-tower supply temperature to both liquid loops.
@@ -132,7 +129,7 @@ add_line(model, 'Aeration Model/7', 'Rack CDU and Internal Loop/8', ...
 % CDU to facility loop.
 add_line(model, 'Rack CDU and Internal Loop/1', 'Facility PG25 Loop/1', ...
     'autorouting', 'on');
-add_line(model, 'IT Racks/3', 'Facility PG25 Loop/8', 'autorouting', 'on');
+add_line(model, 'Inputs/29', 'Facility PG25 Loop/8', 'autorouting', 'on');
 
 % Live external-loop fluid and aeration signals.
 add_line(model, 'Aeration Model/8', 'Facility PG25 Loop/3', ...
@@ -155,7 +152,7 @@ add_line(model, 'Facility PG25 Loop/5', 'Cooling Tower/3', ...
     'autorouting', 'on');
 
 % Electrical accounting.
-add_line(model, 'IT Racks/1', 'Facility Energy and Cost/1', ...
+add_line(model, 'Inputs/27', 'Facility Energy and Cost/1', ...
     'autorouting', 'on');
 add_line(model, 'Rack CDU and Internal Loop/3', ...
     'Facility Energy and Cost/2', 'autorouting', 'on');
@@ -170,25 +167,28 @@ add_line(model, 'Facility Energy and Cost/8', 'TCO Financial Model/1', ...
 add_line(model, 'Facility Energy and Cost/9', 'TCO Financial Model/2', ...
     'autorouting', 'on');
 
+% Centralized user-facing outputs.
+add_line(model, 'Facility Energy and Cost/7', 'Outputs/1', 'autorouting', 'on');
+add_line(model, 'Rack CDU and Internal Loop/3', 'Outputs/2', 'autorouting', 'on');
+add_line(model, 'Facility PG25 Loop/3', 'Outputs/3', 'autorouting', 'on');
+add_line(model, 'Cooling Tower/2', 'Outputs/4', 'autorouting', 'on');
+add_line(model, 'TCO Financial Model/2', 'Outputs/5', 'autorouting', 'on');
+add_line(model, 'Facility Energy and Cost/8', 'Outputs/6', 'autorouting', 'on');
+add_line(model, 'Rack CDU and Internal Loop/5', 'Outputs/7', 'autorouting', 'on');
+add_line(model, 'Rack CDU and Internal Loop/2', 'Outputs/8', 'autorouting', 'on');
+add_line(model, 'Inputs/29', 'Outputs/9', 'autorouting', 'on');
+
 %% 4. TOP-LEVEL MONITORING
 monitor_sources = {
-    'IT Racks/1',                            'P_IT_kW';
-    'IT Racks/3',                            'facility_U';
-    'Rack CDU and Internal Loop/2',          'flow_internal_m3h';
-    'Rack CDU and Internal Loop/3',          'P_internal_loop_pump_kW';
-    'Rack CDU and Internal Loop/5',          'T_chip_C';
-    'Facility PG25 Loop/2',                  'flow_external_m3h';
-    'Facility PG25 Loop/3',                  'P_external_loop_pump_kW';
-    'Cooling Tower/1',                       'T_tower_supply_C';
-    'Cooling Tower/2',                       'P_tower_kW';
-    'Facility Energy and Cost/1',            'P_facility_kW';
-    'Facility Energy and Cost/7',            'PUE_period';
-    'Facility Energy and Cost/8',            'E_annual_facility_kWh';
-    'Facility Energy and Cost/9',            'E_annual_cooling_kWh';
-    'Facility Energy and Cost/10',           'P_cooling_kW';
-    'TCO Financial Model/1',                 'CAPEX_initial_cooling';
-    'TCO Financial Model/2',                 'TCO_nominal_facility';
-    'TCO Financial Model/3',                 'TCO_nominal_cooling'
+    'Outputs/1', 'PUE';
+    'Outputs/2', 'P_internal_loop_pump_kW';
+    'Outputs/3', 'P_external_loop_pump_kW';
+    'Outputs/4', 'P_tower_kW';
+    'Outputs/5', 'TCO_nominal_facility';
+    'Outputs/6', 'E_annual_facility_kWh';
+    'Outputs/7', 'T_chip_C';
+    'Outputs/8', 'flow_coolant_total_m3h';
+    'Outputs/9', 'flow_coolant_per_U_m3h'
 };
 
 xout = 1980;
@@ -200,22 +200,6 @@ for idx = 1:size(monitor_sources,1)
         'SaveFormat', 'Timeseries', ...
         'Position', [xout yout+(idx-1)*28 xout+175 yout+20+(idx-1)*28]);
     add_line(model, monitor_sources{idx,1}, [block_name '/1'], ...
-        'autorouting', 'on');
-end
-
-% Numeric displays show actual values during simulation and preserve the final
-% value when the run finishes. The labels identify the quantity and unit.
-display_defs = {
-    'Rack CDU and Internal Loop/5',   'Estimated chip temperature (C)', [325 520 540 555];
-    'Facility Energy and Cost/1',     'Facility power (kW)',            [35 590 285 625];
-    'Facility Energy and Cost/7',     'Period PUE (x)',                  [325 590 540 625];
-    'Facility Energy and Cost/9',     'Annual cooling energy (kWh)',    [35 640 285 675];
-    'TCO Financial Model/3',          'Nominal cooling TCO (currency)', [325 640 540 675]
-};
-for idx = 1:size(display_defs,1)
-    add_block('simulink/Sinks/Display', [model '/' display_defs{idx,2}], ...
-        'Position', display_defs{idx,3});
-    add_line(model, display_defs{idx,1}, [display_defs{idx,2} '/1'], ...
         'autorouting', 'on');
 end
 
@@ -245,28 +229,6 @@ for idx = 1:numel(viscosity_displays)
     catch
     end
 end
-
-add_block('simulink/Signal Routing/Mux', [model '/Main Scope Mux'], ...
-    'Inputs', '9', 'Position', [590 405 610 610]);
-add_block('simulink/Sinks/Scope', [model '/Main Scope'], ...
-    'Position', [675 480 735 540]);
-
-scope_sources = {
-    'IT Racks/1';
-    'Rack CDU and Internal Loop/3';
-    'Facility PG25 Loop/3';
-    'Cooling Tower/2';
-    'Facility Energy and Cost/1';
-    'Facility Energy and Cost/2';
-    'Rack CDU and Internal Loop/5';
-    'Aeration Model/1';
-    'Aeration Model/7'
-};
-for idx = 1:numel(scope_sources)
-    add_line(model, scope_sources{idx}, ...
-        ['Main Scope Mux/' num2str(idx)], 'autorouting', 'on');
-end
-add_line(model, 'Main Scope Mux/1', 'Main Scope/1', 'autorouting', 'on');
 
 % Model annotation.
 Simulink.Annotation(model, sprintf([ ...
