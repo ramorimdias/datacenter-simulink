@@ -10,6 +10,7 @@
 %   Facility PG25 Loop
 %   Cooling Tower
 %   Facility Energy and Cost
+%   TCO Financial Model
 %
 % Run from the repository root with:
 %   build_model
@@ -20,6 +21,7 @@ clc;
 %% 1. LOAD PARAMETERS AND DERIVED VALUES
 script_path = mfilename('fullpath');
 repo_root = fileparts(fileparts(script_path));
+addpath(genpath(repo_root));
 run(fullfile(repo_root, 'config', 'default_parameters.m'));
 run(fullfile(repo_root, 'src', 'initialize_parameters.m'));
 
@@ -44,7 +46,8 @@ pos.racks    = [280 105 465 245];
 pos.cdu      = [535 70 755 285];
 pos.loop     = [830 70 1050 285];
 pos.tower    = [1125 70 1345 285];
-pos.energy   = [830 390 1080 625];
+pos.energy   = [640 390 890 635];
+pos.tco      = [960 390 1210 635];
 
 add_subsystem(model, 'Operating Scenario', pos.scenario, 'lightBlue');
 add_subsystem(model, 'IT Racks', pos.racks, 'lightGreen');
@@ -52,6 +55,7 @@ add_subsystem(model, 'Rack CDU and Internal Loop', pos.cdu, 'yellow');
 add_subsystem(model, 'Facility PG25 Loop', pos.loop, 'orange');
 add_subsystem(model, 'Cooling Tower', pos.tower, 'cyan');
 add_subsystem(model, 'Facility Energy and Cost', pos.energy, 'magenta');
+add_subsystem(model, 'TCO Financial Model', pos.tco, 'gray');
 
 build_scenario_subsystem([model '/Operating Scenario']);
 build_it_racks_subsystem([model '/IT Racks']);
@@ -59,6 +63,7 @@ build_cdu_subsystem([model '/Rack CDU and Internal Loop']);
 build_facility_loop_subsystem([model '/Facility PG25 Loop']);
 build_tower_subsystem([model '/Cooling Tower']);
 build_energy_cost_subsystem([model '/Facility Energy and Cost']);
+build_tco_subsystem([model '/TCO Financial Model']);
 
 %% 3. TOP-LEVEL CONNECTIONS
 % Scenario to racks and tower.
@@ -102,6 +107,12 @@ add_line(model, 'Facility PG25 Loop/3', ...
 add_line(model, 'Cooling Tower/2', 'Facility Energy and Cost/4', ...
     'autorouting', 'on');
 
+% Annual energy into the financial model.
+add_line(model, 'Facility Energy and Cost/8', 'TCO Financial Model/1', ...
+    'autorouting', 'on');
+add_line(model, 'Facility Energy and Cost/9', 'TCO Financial Model/2', ...
+    'autorouting', 'on');
+
 %% 4. TOP-LEVEL MONITORING
 monitor_sources = {
     'IT Racks/1',                          'P_IT_kW';
@@ -116,42 +127,52 @@ monitor_sources = {
     'Facility Energy and Cost/1',          'P_facility_kW';
     'Facility Energy and Cost/2',          'PUE_instantaneous';
     'Facility Energy and Cost/3',          'E_simulation_kWh';
-    'Facility Energy and Cost/4',          'E_projected_kWh';
-    'Facility Energy and Cost/5',          'projected_cost';
-    'Facility Energy and Cost/6',          'average_monthly_cost';
-    'Facility Energy and Cost/7',          'PUE_period'
+    'Facility Energy and Cost/7',          'PUE_period';
+    'Facility Energy and Cost/8',          'E_annual_facility_kWh';
+    'Facility Energy and Cost/9',          'E_annual_cooling_kWh';
+    'Facility Energy and Cost/10',         'P_cooling_kW';
+    'TCO Financial Model/1',               'CAPEX_initial_cooling';
+    'TCO Financial Model/2',               'TCO_discounted_facility';
+    'TCO Financial Model/3',               'TCO_discounted_cooling';
+    'TCO Financial Model/4',               'TCO_nominal_facility';
+    'TCO Financial Model/5',               'TCO_nominal_cooling';
+    'TCO Financial Model/6',               'cost_discounted_facility_electricity';
+    'TCO Financial Model/7',               'cost_discounted_cooling_electricity';
+    'TCO Financial Model/8',               'cost_discounted_nonenergy_opex'
 };
 
 xout = 1435;
-yout = 55;
+yout = 45;
 for idx = 1:size(monitor_sources,1)
     block_name = ['Output ' monitor_sources{idx,2}];
     add_block('simulink/Sinks/To Workspace', [model '/' block_name], ...
         'VariableName', monitor_sources{idx,2}, ...
         'SaveFormat', 'Timeseries', ...
-        'Position', [xout yout+(idx-1)*42 xout+145 yout+25+(idx-1)*42]);
+        'Position', [xout yout+(idx-1)*34 xout+160 yout+22+(idx-1)*34]);
     add_line(model, monitor_sources{idx,1}, [block_name '/1'], ...
         'autorouting', 'on');
 end
 
-% A compact visual display area for the main commercial outputs.
+% Compact visual display area for the commercial outputs.
 display_defs = {
-    'Facility Energy and Cost/4', 'Projected energy kWh';
-    'Facility Energy and Cost/5', 'Projected electricity cost';
-    'Facility Energy and Cost/6', 'Average monthly cost';
+    'Facility Energy and Cost/8', 'Annual facility energy kWh';
+    'Facility Energy and Cost/9', 'Annual cooling energy kWh';
+    'TCO Financial Model/1',      'Initial cooling CAPEX';
+    'TCO Financial Model/2',      'Discounted facility TCO';
+    'TCO Financial Model/3',      'Discounted cooling TCO';
     'Facility Energy and Cost/7', 'Period PUE'
 };
 for idx = 1:size(display_defs,1)
     add_block('simulink/Sinks/Display', [model '/' display_defs{idx,2}], ...
-        'Position', [1125 395+(idx-1)*58 1335 430+(idx-1)*58]);
+        'Position', [35 390+(idx-1)*52 270 425+(idx-1)*52]);
     add_line(model, display_defs{idx,1}, [display_defs{idx,2} '/1'], ...
         'autorouting', 'on');
 end
 
 add_block('simulink/Signal Routing/Mux', [model '/Main Scope Mux'], ...
-    'Inputs', '7', 'Position', [1125 690 1145 835]);
+    'Inputs', '7', 'Position', [320 690 340 835]);
 add_block('simulink/Sinks/Scope', [model '/Main Scope'], ...
-    'Position', [1220 735 1280 795]);
+    'Position', [415 735 475 795]);
 
 scope_sources = {
     'IT Racks/1';
@@ -170,11 +191,11 @@ add_line(model, 'Main Scope Mux/1', 'Main Scope/1', 'autorouting', 'on');
 
 % Model annotation.
 Simulink.Annotation(model, sprintf([ ...
-    'DIRECT-TO-CHIP DATA CENTER\n' ...
+    'DIRECT-TO-CHIP DATA CENTER - EXCEL BASELINE\n' ...
+    '10 MW IT, 10 K design delta T, 8760 h/year, PG25 assumptions, ' ...
+    'discounted TCO.\n' ...
     'Top level shows the main organs. Double-click a subsystem to inspect ' ...
-    'its internal correlations.\n' ...
-    'Cost projection repeats the simulated load profile for the selected ' ...
-    'number of 24/7 operating months.']));
+    'its internal correlations.']));
 
 %% 5. SAVE
 save_system(model, fullfile(repo_root, [model '.slx']));
@@ -182,4 +203,4 @@ open_system(model);
 
 fprintf('\nCreated: %s\n', fullfile(repo_root, [model '.slx']));
 fprintf('Run with: simOut = sim(''%s'');\n', model);
-fprintf('Final projected cost: projected_cost.Data(end)\n\n');
+fprintf('For the annual cash-flow table, run: run_analysis\n\n');
