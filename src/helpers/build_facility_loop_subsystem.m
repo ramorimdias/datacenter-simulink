@@ -22,9 +22,18 @@ function build_facility_loop_subsystem(path)
         'Expr', flow_expr, 'Position', [175 55 365 105]);
 
     add_block('simulink/Signal Routing/Mux', [path '/Pump Inputs'], ...
-        'Inputs', '6', 'Position', [105 145 125 355]);
+        'Inputs', '7', 'Position', [105 145 125 385]);
+    add_block('simulink/Signal Routing/Mux', [path '/Pressure Drop Inputs'], ...
+        'Inputs', '9', 'Position', [105 410 125 650]);
+    add_block('simulink/Sources/Constant', [path '/Pipe Length m'], 'Value', 'external_pipe_length_m', 'Position', [175 410 275 435]);
+    add_block('simulink/Sources/Constant', [path '/Pipe Diameter m'], 'Value', 'external_pipe_diameter_m', 'Position', [175 445 275 470]);
+    add_block('simulink/Sources/Constant', [path '/Pipe Roughness m'], 'Value', 'external_pipe_roughness_m', 'Position', [175 480 275 505]);
+    add_block('simulink/Sources/Constant', [path '/Fittings K'], 'Value', 'external_fittings_loss_coefficient', 'Position', [175 515 275 540]);
+    add_block('simulink/User-Defined Functions/Fcn', [path '/External Pressure Drop Pa'], ...
+        'Expr', 'u(3)*(4*(u(1)*1000/((u(2)+1e-9)*external_target_deltaT_K)/(u(5)+1e-6))/(3.14159265*u(7)^2))^2/2', ...
+        'Position', [320 485 560 570]);
     pump_expr = [ ...
-        'pump_power_calibration_factor*' ...
+        'pump_power_calibration_factor*u(7)*' ...
         '(external_reference_pressure_drop_Pa*' ...
         '(((u(1)*1000/(((u(2)+abs(u(2)))/2+1e-9)*external_target_deltaT_K)/' ...
         '((u(5)+abs(u(5)))/2+1e-6))/Vdot_external_reference_m3s)^2)*' ...
@@ -77,7 +86,18 @@ function build_facility_loop_subsystem(path)
     add_line(path, 'ExternalViscosity_Pa_s/1', 'Pump Inputs/4');
     add_line(path, 'FlowCapacityFactor/1', 'Pump Inputs/5');
     add_line(path, 'EfficiencyFactor/1', 'Pump Inputs/6');
+    add_line(path, 'External Pressure Drop Pa/1', 'Pump Inputs/7');
     add_line(path, 'Pump Inputs/1', 'External Pump Correlation kW/1');
+    add_line(path, 'HeatFromCDU_kW/1', 'Pressure Drop Inputs/1');
+    add_line(path, 'ExternalRhoCp_J_m3K/1', 'Pressure Drop Inputs/2');
+    add_line(path, 'ExternalDensity_kg_m3/1', 'Pressure Drop Inputs/3');
+    add_line(path, 'ExternalViscosity_Pa_s/1', 'Pressure Drop Inputs/4');
+    add_line(path, 'FlowCapacityFactor/1', 'Pressure Drop Inputs/5');
+    add_line(path, 'Pipe Length m/1', 'Pressure Drop Inputs/6');
+    add_line(path, 'Pipe Diameter m/1', 'Pressure Drop Inputs/7');
+    add_line(path, 'Pipe Roughness m/1', 'Pressure Drop Inputs/8');
+    add_line(path, 'Fittings K/1', 'Pressure Drop Inputs/9');
+    add_line(path, 'Pressure Drop Inputs/1', 'External Pressure Drop Pa/1');
 
     add_line(path, 'HeatFromCDU_kW/1', 'Heat to Tower kW/1');
     add_line(path, 'External Pump Correlation kW/1', 'Heat to Tower kW/2');
