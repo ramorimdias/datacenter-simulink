@@ -73,7 +73,9 @@ build_facility_loop_subsystem([model '/Facility PG25 Loop']);
 build_tower_subsystem([model '/Cooling Tower']);
 build_energy_cost_subsystem([model '/Facility Energy and Cost']);
 build_tco_subsystem([model '/TCO Financial Model']);
-build_simscape_reference_subsystem([model '/Simscape Fluids Reference']);
+% Simscape integration is intentionally disabled for this native reduced-order
+% model.  The hydraulic equations are implemented explicitly in the two loop
+% subsystems below.
 
 %% 3. TOP-LEVEL CONNECTIONS
 % Scenario to racks and tower.
@@ -94,6 +96,8 @@ add_line(model, 'Fluid Properties/6', 'Aeration Model/5', 'autorouting', 'on');
 
 % IT racks to CDU.
 add_line(model, 'IT Racks/2', 'Rack CDU and Internal Loop/1', ...
+    'autorouting', 'on');
+add_line(model, 'IT Racks/3', 'Rack CDU and Internal Loop/9', ...
     'autorouting', 'on');
 
 % Cooling-tower supply temperature to both liquid loops.
