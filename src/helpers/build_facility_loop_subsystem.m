@@ -33,6 +33,8 @@ function build_facility_loop_subsystem(path)
         'Inputs', '9', 'Position', [330 500 350 735]);
     deltaT = num2str(evalin('base','external_target_deltaT_K'),15);
     flow_expr = ['u(1)*1000*3600/(u(2)*' deltaT ')'];
+    add_block('simulink/Signal Routing/Mux', [path '/Delivered Flow Inputs'], ...
+        'Inputs', '2', 'Position', [330 45 350 105]);
     add_block('simulink/User-Defined Functions/Fcn', [path '/Delivered Flow m3_h'], ...
         'Expr', flow_expr, 'Position', [390 55 580 105]);
     add_block('simulink/Signal Routing/Mux', [path '/Pump Flow Inputs'], ...
@@ -107,7 +109,9 @@ function build_facility_loop_subsystem(path)
     add_line(path, 'External Pressure Drop Pa/1', 'Pump Power Inputs/1');
     add_line(path, 'Pump Flow m3_h/1', 'Pump Power Inputs/2');
     add_line(path, 'EfficiencyFactor/1', 'Pump Power Inputs/3');
-    add_line(path, 'HeatFromCDU_kW/1', 'Delivered Flow m3_h/1');
+    add_line(path, 'HeatFromCDU_kW/1', 'Delivered Flow Inputs/1');
+    add_line(path, 'ExternalRhoCp_J_m3K/1', 'Delivered Flow Inputs/2');
+    add_line(path, 'Delivered Flow Inputs/1', 'Delivered Flow m3_h/1');
     add_line(path, 'Delivered Flow m3_h/1', 'Pump Flow Inputs/1');
     add_line(path, 'FlowCapacityFactor/1', 'Pump Flow Inputs/2');
     add_line(path, 'Pump Flow Inputs/1', 'Pump Flow m3_h/1');
