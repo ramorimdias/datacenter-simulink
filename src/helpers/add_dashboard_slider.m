@@ -11,8 +11,25 @@ function added = add_dashboard_slider(parent_path, slider_name, target_block_nam
     target_path = [parent_path '/' target_block_name];
 
     try
-        add_block('simulink/Dashboard/Slider', slider_path, ...
-            'Position', position);
+        % The public library path changed across Simulink releases.
+        % Try the current path first, followed by the legacy HMI library.
+        slider_sources = { ...
+            'simulink/Dashboard/Slider', ...
+            'simulink_hmi_blocks/Slider'};
+        last_add_exception = [];
+        for source_idx = 1:numel(slider_sources)
+            try
+                add_block(slider_sources{source_idx}, slider_path, ...
+                    'Position', position);
+                last_add_exception = [];
+                break;
+            catch add_exception
+                last_add_exception = add_exception;
+            end
+        end
+        if ~isempty(last_add_exception)
+            rethrow(last_add_exception);
+        end
 
         try
             set_param(slider_path, ...

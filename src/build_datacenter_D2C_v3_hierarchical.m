@@ -217,24 +217,36 @@ end
 % Numeric displays show actual values during simulation and preserve the final
 % value when the run finishes. The labels identify the quantity and unit.
 display_defs = {
-    'Fluid Properties/1',             'Internal Cp J per kg K',       [35 370 285 405];
-    'Fluid Properties/3',             'Internal viscosity Pa s',      [35 420 285 455];
-    'Fluid Properties/5',             'External Cp J per kg K',       [35 470 285 505];
-    'Fluid Properties/7',             'External viscosity Pa s',      [35 520 285 555];
-    'Aeration Model/1',               'Internal air fraction',        [325 370 540 405];
-    'Aeration Model/2',               'External air fraction',        [325 420 540 455];
-    'Aeration Model/7',               'Effective Rth K per W',        [325 470 540 505];
-    'Rack CDU and Internal Loop/5',   'Estimated chip temperature C', [325 520 540 555];
-    'Facility Energy and Cost/1',     'Facility power kW',            [35 590 285 625];
-    'Facility Energy and Cost/7',     'Period PUE',                   [325 590 540 625];
-    'Facility Energy and Cost/9',     'Annual cooling energy kWh',    [35 640 285 675];
-    'TCO Financial Model/3',          'Discounted cooling TCO',       [325 640 540 675]
+    'Fluid Properties/1',             'Internal Cp [J/(kg K)]',       [35 370 285 405];
+    'Fluid Properties/3',             'Internal viscosity [Pa s]',   [35 420 285 455];
+    'Fluid Properties/5',             'External Cp [J/(kg K)]',       [35 470 285 505];
+    'Fluid Properties/7',             'External viscosity [Pa s]',   [35 520 285 555];
+    'Aeration Model/1',               'Internal air fraction [%]',    [325 370 540 405];
+    'Aeration Model/2',               'External air fraction [%]',    [325 420 540 455];
+    'Aeration Model/7',               'Effective Rth [K/W]',          [325 470 540 505];
+    'Rack CDU and Internal Loop/5',   'Estimated chip temperature [C]', [325 520 540 555];
+    'Facility Energy and Cost/1',     'Facility power [kW]',          [35 590 285 625];
+    'Facility Energy and Cost/7',     'Period PUE [x]',                [325 590 540 625];
+    'Facility Energy and Cost/9',     'Annual cooling energy [kWh]',  [35 640 285 675];
+    'TCO Financial Model/5',          'Nominal cooling TCO [currency]', [325 640 540 675]
 };
 for idx = 1:size(display_defs,1)
     add_block('simulink/Sinks/Display', [model '/' display_defs{idx,2}], ...
         'Position', display_defs{idx,3});
     add_line(model, display_defs{idx,1}, [display_defs{idx,2} '/1'], ...
         'autorouting', 'on');
+end
+
+% Use fixed-point formatting for all numeric displays so large values remain
+% readable (for example 18,000,000 instead of 1.8e7).
+display_blocks = find_system(model, 'LookUnderMasks', 'all', ...
+    'FollowLinks', 'on', 'BlockType', 'Display');
+for idx = 1:numel(display_blocks)
+    try
+        set_param(display_blocks{idx}, 'Format', 'bank');
+    catch
+        % Formatting is cosmetic and varies slightly by Simulink release.
+    end
 end
 
 add_block('simulink/Signal Routing/Mux', [model '/Main Scope Mux'], ...
@@ -262,8 +274,7 @@ add_line(model, 'Main Scope Mux/1', 'Main Scope/1', 'autorouting', 'on');
 % Model annotation.
 Simulink.Annotation(model, sprintf([ ...
     'DIRECT-TO-CHIP DATA CENTER - INTERACTIVE EXCEL BASELINE\n' ...
-    '10 MW IT, 10 K design delta T, 8760 h/year, PG25 assumptions, ' ...
-    'discounted TCO.\n' ...
+    '10 MW IT, 10 K design delta T, 8760 h/year, PG25 assumptions.\n' ...
     'Double-click Fluid Properties or Aeration Model to access live ' ...
     'Dashboard Sliders and numeric displays.']));
 

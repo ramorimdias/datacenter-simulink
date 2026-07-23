@@ -10,10 +10,12 @@ function build_aeration_subsystem(path)
     alpha_e = evalin('base', 'air_void_fraction_external');
 
     add_in(path, 'InternalCp_J_kgK', 1, [25 50 55 70]);
-    add_in(path, 'InternalDensity_kg_m3', 2, [25 105 55 125]);
+    % Inport and Outport blocks share the subsystem namespace. Keep the
+    % clean-liquid inputs distinct from the effective-mixture outputs.
+    add_in(path, 'CleanInternalDensity_kg_m3', 2, [25 105 55 125]);
     add_in(path, 'InternalConductivity_W_mK', 3, [25 160 55 180]);
     add_in(path, 'ExternalCp_J_kgK', 4, [25 330 55 350]);
-    add_in(path, 'ExternalDensity_kg_m3', 5, [25 385 55 405]);
+    add_in(path, 'CleanExternalDensity_kg_m3', 5, [25 385 55 405]);
 
     add_block('simulink/Sources/Constant', ...
         [path '/Internal Air Volume Fraction'], ...
@@ -124,12 +126,12 @@ function build_aeration_subsystem(path)
 
     % Internal signal routing.
     add_line(path, 'Internal Air Volume Fraction/1', 'Internal RhoCp Inputs/1');
-    add_line(path, 'InternalDensity_kg_m3/1', 'Internal RhoCp Inputs/2');
+    add_line(path, 'CleanInternalDensity_kg_m3/1', 'Internal RhoCp Inputs/2');
     add_line(path, 'InternalCp_J_kgK/1', 'Internal RhoCp Inputs/3');
     add_line(path, 'Internal RhoCp Inputs/1', 'Internal Effective RhoCp/1');
 
     add_line(path, 'Internal Air Volume Fraction/1', 'Internal Density Inputs/1');
-    add_line(path, 'InternalDensity_kg_m3/1', 'Internal Density Inputs/2');
+    add_line(path, 'CleanInternalDensity_kg_m3/1', 'Internal Density Inputs/2');
     add_line(path, 'Internal Density Inputs/1', 'Internal Effective Density/1');
 
     add_line(path, 'Internal Air Volume Fraction/1', ...
@@ -142,12 +144,12 @@ function build_aeration_subsystem(path)
 
     % External signal routing.
     add_line(path, 'External Air Volume Fraction/1', 'External RhoCp Inputs/1');
-    add_line(path, 'ExternalDensity_kg_m3/1', 'External RhoCp Inputs/2');
+    add_line(path, 'CleanExternalDensity_kg_m3/1', 'External RhoCp Inputs/2');
     add_line(path, 'ExternalCp_J_kgK/1', 'External RhoCp Inputs/3');
     add_line(path, 'External RhoCp Inputs/1', 'External Effective RhoCp/1');
 
     add_line(path, 'External Air Volume Fraction/1', 'External Density Inputs/1');
-    add_line(path, 'ExternalDensity_kg_m3/1', 'External Density Inputs/2');
+    add_line(path, 'CleanExternalDensity_kg_m3/1', 'External Density Inputs/2');
     add_line(path, 'External Density Inputs/1', 'External Effective Density/1');
     add_line(path, 'External Air Volume Fraction/1', ...
         'External Flow Capacity Factor/1');
