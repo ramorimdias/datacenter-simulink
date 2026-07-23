@@ -20,6 +20,8 @@ run(fullfile(repo_root, 'src', 'initialize_parameters.m'));
 % the generated parameter variables there.
 escaped_root = strrep(repo_root, '''', '''''');
 evalin('base', sprintf('cd(''%s''); build_model;', escaped_root));
+evalin('base', sprintf([ ...
+    'set_param(''%s'',''ReturnWorkspaceOutputs'',''on'');'], model));
 
 fprintf('\nRunning representative %.2f h simulation...\n', ...
     simulation_duration_h);
