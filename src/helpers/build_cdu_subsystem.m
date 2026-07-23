@@ -29,18 +29,19 @@ function build_cdu_subsystem(path)
         'Inputs', '**', 'Position', [320 605 390 640]);
 
     deltaT = num2str(evalin('base','internal_target_deltaT_K'),15);
-    flow_expr = ['max(u(1),0)*1000*3600/(max(u(2),1e-6)*' deltaT ')'];
+    flow_expr = ['u(1)*1000*3600/(u(2)*' deltaT ')'];
     add_block('simulink/User-Defined Functions/Fcn', [path '/Delivered Flow m3_h'], ...
         'Expr', flow_expr, 'Position', [330 55 520 105]);
     add_block('simulink/Signal Routing/Mux', [path '/Pump Flow Inputs'], ...
         'Inputs', '2', 'Position', [300 125 320 185]);
     add_block('simulink/User-Defined Functions/Fcn', [path '/Pump Flow m3_h'], ...
-        'Expr', 'u(1)/max(u(2),1e-6)', 'Position', [350 135 520 175]);
+        'Expr', 'u(1)/u(2)', 'Position', [350 135 520 175]);
 
-    q_expr = ['max(u(1),0)*1000/(max(u(2),1e-6)*' deltaT ')/max(u(5),1e-6)'];
-    re_expr = ['u(3)*(' q_expr ')/(pi*u(7)^2/4)*u(7)/max(u(4),1e-12)'];
-    f_expr = ['(1-min(max((' re_expr '-2300)/1700,0),1))*(64/max(' re_expr ',1))+' ...
-        'min(max((' re_expr '-2300)/1700,0),1)*0.25/(log10(u(8)/(3.7*u(7))+5.74/max(' re_expr ',1)^0.9)^2)'];
+    q_expr = ['u(1)*1000/(u(2)*' deltaT ')/u(5)'];
+    re_expr = ['u(3)*(' q_expr ')/(pi*u(7)^2/4)*u(7)/u(4)'];
+    r_safe = ['sqrt((' re_expr ')^2+1e-12)'];
+    w_expr = ['0.5*(1+((' r_safe ')-4000)/sqrt(((' r_safe ')-4000)^2+1))'];
+    f_expr = ['(1-(' w_expr '))*(64/(' r_safe '))+(' w_expr ')*0.25/(log10(u(8)/(3.7*u(7))+5.74/(' r_safe ')^0.9)^2)'];
     dp_expr = ['((' f_expr ')*u(6)/u(7)+u(9))*u(3)*(((' q_expr ')/(pi*u(7)^2/4))^2)/2+u(10)'];
     add_block('simulink/User-Defined Functions/Fcn', [path '/Internal Reynolds Number'], ...
         'Expr', re_expr, 'Position', [560 440 790 480]);
@@ -52,12 +53,12 @@ function build_cdu_subsystem(path)
     add_block('simulink/Signal Routing/Mux', [path '/Pump Power Inputs'], ...
         'Inputs', '3', 'Position', [560 190 580 270]);
     add_block('simulink/User-Defined Functions/Fcn', [path '/Internal Pump Power kW'], ...
-        'Expr', 'u(1)*u(2)/3600/(max(u(3),1e-6)*1000)', ...
+        'Expr', 'u(1)*u(2)/3600/(u(3)*1000)', ...
         'Position', [620 195 850 245]);
     add_block('simulink/Signal Routing/Mux', [path '/Branch Flow Inputs'], ...
         'Inputs', '2', 'Position', [560 650 580 710]);
     add_block('simulink/User-Defined Functions/Fcn', [path '/Coldplate Branch Flow m3_h'], ...
-        'Expr', 'u(1)/max(u(2),1)', 'Position', [620 660 850 700]);
+        'Expr', 'u(1)/u(2)', 'Position', [620 660 850 700]);
 
     add_block('simulink/Math Operations/Sum', [path '/Heat to External kW'], ...
         'Inputs', '++', 'Position', [870 120 920 180]);
@@ -70,7 +71,7 @@ function build_cdu_subsystem(path)
     add_block('simulink/Signal Routing/Mux', [path '/Chip Inputs'], ...
         'Inputs', '3', 'Position', [870 285 890 385]);
     chip_expr = ['u(1)+HX_approach_K+0.5*internal_target_deltaT_K+' ...
-        'u(2)*1000/total_coldplate_paths*((u(3)+abs(u(3)))/2)'];
+        'u(2)*1000/total_coldplate_paths*u(3)'];
     add_block('simulink/User-Defined Functions/Fcn', [path '/Chip Temperature Correlation C'], ...
         'Expr', chip_expr, 'Position', [925 315 1135 365]);
 
