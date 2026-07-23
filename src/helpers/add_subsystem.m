@@ -8,11 +8,37 @@ function add_subsystem(model_name, subsystem_name, position, color)
 
     path = [model_name '/' subsystem_name];
 
-    %#ok<INUSD> color is retained for compatibility with existing builders.
+    requested = lower(char(string(color)));
+    switch requested
+        case {'lightgreen', 'green'}
+            safe_color = 'green';
+        case {'lightblue', 'blue'}
+            safe_color = 'lightBlue';
+        case {'yellow'}
+            safe_color = 'yellow';
+        case {'orange'}
+            safe_color = 'orange';
+        case {'cyan'}
+            safe_color = 'cyan';
+        case {'magenta'}
+            safe_color = 'magenta';
+        case {'gray', 'grey'}
+            safe_color = 'gray';
+        otherwise
+            safe_color = 'white';
+    end
 
     % Create the subsystem using only universally supported parameters.
     add_block('simulink/Ports & Subsystems/Subsystem', path, ...
         'Position', position);
+
+    try
+        set_param(path, 'BackgroundColor', safe_color, ...
+            'ForegroundColor', 'black', 'FontWeight', 'bold', ...
+            'FontSize', '12');
+    catch
+        % Styling is optional; model construction can continue.
+    end
 
     % ShowPortLabels is not available for every subsystem implementation.
     try
