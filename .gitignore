@@ -3,6 +3,10 @@
 *.slxc
 slprj/
 
+# Generated analysis outputs
+results/*.csv
+results/*.mat
+
 # MATLAB autosave and temporary files
 *.asv
 *.m~
