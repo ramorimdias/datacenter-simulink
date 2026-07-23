@@ -46,7 +46,8 @@ baseline_pump_power_fraction_of_IT = 0.012;
 % When true, the detailed hydraulic correlations are scaled so that total
 % internal plus external pump power at the clean-fluid design point matches
 % the Excel PG25 baseline: water pump power x PG25 multiplier.
-use_excel_pump_power_calibration = true;
+% Legacy Excel pump calibration is retained only for comparison reporting;
+% active Simulink pump outputs use the hydraulic equations directly.
 
 %% PG25 fluid properties and commercial assumptions
 % Colleague baseline values at approximately 30 degC.
